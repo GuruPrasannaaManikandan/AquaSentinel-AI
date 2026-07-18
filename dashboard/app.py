@@ -325,12 +325,14 @@ with tab4:
     
     if unack_alerts and len(unack_alerts) > 0:
         for alert in unack_alerts:
-            # Check alert level
             alert_id = alert["id"]
             sev = alert["severity"]
             with st.container():
                 st.markdown(f"**Alert ID {alert_id} | Severity: {sev} | Device: {alert['device_id']}**")
-                st.error(alert["message"]) if sev == "HIGH" else st.warning(alert["message"])
+                if sev == "HIGH":
+                    st.error(alert["message"])
+                else:
+                    st.warning(alert["message"])
                 st.caption(f"Reason Code: {alert['reason_code']} | Timestamp: {alert['timestamp']}")
                 if st.button(f"Acknowledge Alert {alert_id}", key=f"ack_{alert_id}"):
                     fetch_json(f"/alerts/{alert_id}/acknowledge", "POST")

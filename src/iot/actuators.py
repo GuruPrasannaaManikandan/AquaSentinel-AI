@@ -2,14 +2,66 @@ class VirtualActuators:
     """
     Simulates physical edge-side actuators including indicators (LEDs), sound alarm (Buzzer),
     and a relay-controlled virtual aerator/pump.
+    Supports integration with the Hardware Abstraction Layer (HAL) when provided.
     """
-    def __init__(self):
-        self.green_led = "OFF"
-        self.yellow_led = "OFF"
-        self.red_led = "OFF"
-        self.buzzer = "OFF"
-        self.pump_relay = "OFF"
+    def __init__(self, hal=None):
+        self.hal = hal
+        self._green_led = "OFF"
+        self._yellow_led = "OFF"
+        self._red_led = "OFF"
+        self._buzzer = "OFF"
+        self._pump_relay = "OFF"
         self.actuator_logs = []
+
+    @property
+    def green_led(self):
+        return self.hal.read_actuator("green_led") if self.hal else self._green_led
+    @green_led.setter
+    def green_led(self, val):
+        if self.hal:
+            self.hal.write_actuator("green_led", val)
+        else:
+            self._green_led = val
+
+    @property
+    def yellow_led(self):
+        return self.hal.read_actuator("yellow_led") if self.hal else self._yellow_led
+    @yellow_led.setter
+    def yellow_led(self, val):
+        if self.hal:
+            self.hal.write_actuator("yellow_led", val)
+        else:
+            self._yellow_led = val
+
+    @property
+    def red_led(self):
+        return self.hal.read_actuator("red_led") if self.hal else self._red_led
+    @red_led.setter
+    def red_led(self, val):
+        if self.hal:
+            self.hal.write_actuator("red_led", val)
+        else:
+            self._red_led = val
+
+    @property
+    def buzzer(self):
+        return self.hal.read_actuator("buzzer") if self.hal else self._buzzer
+    @buzzer.setter
+    def buzzer(self, val):
+        if self.hal:
+            self.hal.write_actuator("buzzer", val)
+        else:
+            self._buzzer = val
+
+    @property
+    def pump_relay(self):
+        return self.hal.read_actuator("pump_relay") if self.hal else self._pump_relay
+    @pump_relay.setter
+    def pump_relay(self, val):
+        if self.hal:
+            self.hal.write_actuator("pump_relay", val)
+        else:
+            self._pump_relay = val
 
     def update_state(self, fusion_state):
         """
@@ -77,3 +129,4 @@ class VirtualActuators:
     def get_summary(self):
         """Returns string representation of current actuator states."""
         return f"LEDs(G={self.green_led}, Y={self.yellow_led}, R={self.red_led}), Buzzer={self.buzzer}, Pump={self.pump_relay}"
+

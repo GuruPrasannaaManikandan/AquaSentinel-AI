@@ -1,0 +1,140 @@
+{
+  "devices": {
+    "AQUA_FRESH_001": {
+      "device_id": "AQUA_FRESH_001",
+      "ecosystem_type": "Freshwater",
+      "dataset_route": "caml",
+      "wifi": {
+        "ssid": "AquaNet_Freshwater_AP",
+        "password": "aquasentinel_secure"
+      },
+      "mqtt": {
+        "host": "localhost",
+        "port": 1883,
+        "topics": {
+          "telemetry": "aquatic/AQUA_FRESH_001/telemetry",
+          "status": "aquatic/AQUA_FRESH_001/status",
+          "command": "aquatic/AQUA_FRESH_001/command",
+          "decision": "aquatic/AQUA_FRESH_001/decision"
+        }
+      },
+      "gpio": {
+        "ph": 32,
+        "turbidity": 33,
+        "dissolved_oxygen": 34,
+        "gps": 21,
+        "rtc": 22,
+        "distance_to_water": 25,
+        "sample_depth": 26,
+        "green_led": 12,
+        "yellow_led": 13,
+        "red_led": 14,
+        "buzzer": 15,
+        "pump_relay": 16
+      },
+      "calibration": {
+        "ph": {
+          "offset": 0.0,
+          "scale": 1.0
+        },
+        "turbidity": {
+          "offset": 0.0,
+          "scale": 1.0
+        },
+        "dissolved_oxygen": {
+          "offset": 0.0,
+          "scale": 1.0
+        }
+      },
+      "thresholds": {
+        "ph": {"min": 6.5, "max": 8.5},
+        "turbidity": {"min": 0.0, "max": 15.0},
+        "dissolved_oxygen": {"min": 6.0, "max": 12.0}
+      },
+      "physical_bounds": {
+        "ph": {"min": 0.0, "max": 14.0},
+        "turbidity_ntu": {"min": 0.0, "max": 500.0},
+        "dissolved_oxygen_mg_l": {"min": 0.0, "max": 25.0},
+        "temperature_c": {"min": -5.0, "max": 45.0},
+        "salinity_ppt": {"min": 0.0, "max": 50.0},
+        "latitude": {"min": -90.0, "max": 90.0},
+        "longitude": {"min": -180.0, "max": 180.0}
+      },
+      "sampling_interval_seconds": 10
+    },
+    "AQUA_MARINE_001": {
+      "device_id": "AQUA_MARINE_001",
+      "ecosystem_type": "Marine",
+      "dataset_route": "habsos",
+      "wifi": {
+        "ssid": "AquaNet_Marine_AP",
+        "password": "aquasentinel_secure"
+      },
+      "mqtt": {
+        "host": "localhost",
+        "port": 1883,
+        "topics": {
+          "telemetry": "aquatic/AQUA_MARINE_001/telemetry",
+          "status": "aquatic/AQUA_MARINE_001/status",
+          "command": "aquatic/AQUA_MARINE_001/command",
+          "decision": "aquatic/AQUA_MARINE_001/decision"
+        }
+      },
+      "gpio": {
+        "ph": 32,
+        "turbidity": 33,
+        "dissolved_oxygen": 34,
+        "temperature": 35,
+        "salinity": 36,
+        "gps": 21,
+        "rtc": 22,
+        "distance_to_water": 25,
+        "sample_depth": 26,
+        "green_led": 12,
+        "yellow_led": 13,
+        "red_led": 14,
+        "buzzer": 15,
+        "pump_relay": 16
+      },
+      "calibration": {
+        "ph": {
+          "offset": 0.0,
+          "scale": 1.0
+        },
+        "turbidity": {
+          "offset": 0.0,
+          "scale": 1.0
+        },
+        "dissolved_oxygen": {
+          "offset": 0.0,
+          "scale": 1.0
+        },
+        "temperature": {
+          "offset": 0.0,
+          "scale": 1.0
+        },
+        "salinity": {
+          "offset": 0.0,
+          "scale": 1.0
+        }
+      },
+      "thresholds": {
+        "ph": {"min": 7.8, "max": 8.4},
+        "turbidity": {"min": 0.0, "max": 10.0},
+        "dissolved_oxygen": {"min": 5.0, "max": 10.0},
+        "temperature": {"min": 15.0, "max": 30.0},
+        "salinity": {"min": 30.0, "max": 38.0}
+      },
+      "physical_bounds": {
+        "ph": {"min": 0.0, "max": 14.0},
+        "turbidity_ntu": {"min": 0.0, "max": 500.0},
+        "dissolved_oxygen_mg_l": {"min": 0.0, "max": 25.0},
+        "temperature_c": {"min": -5.0, "max": 45.0},
+        "salinity_ppt": {"min": 0.0, "max": 50.0},
+        "latitude": {"min": -90.0, "max": 90.0},
+        "longitude": {"min": -180.0, "max": 180.0}
+      },
+      "sampling_interval_seconds": 10
+    }
+  }
+}
