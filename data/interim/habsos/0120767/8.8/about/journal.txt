@@ -1,0 +1,551 @@
+*****************************************************************
+Journal for accession number: 0120767
+Created on:                    20-04-13 17:23:03 UTC
+By:                            National Centers for Environmental Information
+
+Source: These data were submitted by the National Coastal Data Development Center. 
+        Data comes from multiple sources in Texas, Mississippi, Alabama and 
+		Florida to NCEI, where it is then compiled. Web-services are developed 
+		with the compiled data.
+		
+Actions: Data was copied into the 0-data directory. 
+
+Version 8.8:  This action was performed to update with data submitted since 
+the AIP was last archived. The file /data/0-data/habsos__20230714.csv was 
+replaced by /data/0-data/habsos_20240430.csv. 
+Additionally the lonlat and map files were updated.
+
+Files:
+about/
+This directory contains files created by NCEI staff and other 'negotiable'
+information between NCEI staff and the data provider. 
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data. Each row contains the geographical 
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees). NCEI may have corrected 
+  geographical positions that seemed to be in error when generating this file. 
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+0120767_map.jpg - 
+  Sample bounding box map for these data.
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data.  Each row contains the geographical
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees).  NCEI may have corrected
+  geographic positions that seemed to be in error when generating this file.
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+data/0-data/
+This directory contains the data files as submitted to NCEI.
+
+The following is a summary of the differences between the data files in this
+revision of this accession and the previous revision: 
+
+Removed files: 2
+Updated files: 4
+New files: 4
+
+Removed files:
+
+/data/0-data/habsos_habsos_20230714.csv
+/data/0-data/Cell_Counts_Accession.xml
+
+Updated file:
+
+/about/journal.txt
+/about/0120767_lonlat.txt
+/about/0120767_map.jpeg
+/data/0-data/Support Documentation/HABSOS_Data_Dictionary.xlsx
+
+
+New files:
+
+/data/0-data/habsos_20240430.csv
+
+*****************************************************************
+Journal for accession number: 0120767
+Created on:                    20-04-13 17:23:03 UTC
+By:                            National Centers for Environmental Information
+
+Source: These data were submitted by the National Coastal Data Development Center. 
+        Data comes from multiple sources in Texas, Mississippi, and Florida to NCEI, 
+        where it is then compiled. Web-services are developed with the compiled data.
+		
+Actions: Data was copied into the 0-data directory. 
+
+Version7.7:  This action was performed to update with data submitted since 
+the AIP was last archived.  The file /data/0-data/habsos_20220225.csv was 
+replaced by /data/0-data/habsos_20230714.csv.  Documents provided by the state 
+partners were added to the directory /data/0-data/Support documentation.
+Additionally the lonlat and map files were updated.
+
+Files:
+about/
+This directory contains files created by NCEI staff and other 'negotiable'
+information between NCEI staff and the data provider. 
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data. Each row contains the geographical 
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees). NCEI may have corrected 
+  geographical positions that seemed to be in error when generating this file. 
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+0120767_map.jpg - 
+  Sample bounding box map for these data.
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data.  Each row contains the geographical
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees).  NCEI may have corrected
+  geographic positions that seemed to be in error when generating this file.
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+data/0-data/
+This directory contains the data files as submitted to NCEI.
+
+The following is a summary of the differences between the data files in this
+revision of this accession and the previous revision: 
+
+Removed files: 1
+Updated files: 3
+New files: 4
+
+Removed files:
+
+/data/0-data/habsos_20220225.csv
+
+Updated file:
+
+/about/journal.txt
+/about/0120767_lonlat.txt
+/about/0120767_map.jpeg
+
+
+New files:
+
+/data/0-data/habsos_habsos_20230714.csv
+/data/0-data/Support Documentation/FWRI-HAB counting protocol for phytoplankton (May 2020).pdf/a
+/data/0-data/Support Documentation/FWRI-HAB sampling protocol for phytoplankton (Feb2019).pdf/a
+/data/0-data/Support Documentation/HABSOS_Data_Dictionary.xlsx
+
+*****************************************************************
+Journal for accession number: 0120767
+Created on:                    20-04-13 17:23:03 UTC
+By:                            National Centers for Environmental Information
+
+Source: These data were submitted by the National Coastal Data Development Center. 
+        Data comes from multiple sources in Texas, Mississippi, and Florida to NCEI, 
+        where it is then compiled. Web-services are developed with the compiled data.
+		
+Actions: Data was copied into the 0-data directory. 
+
+Version6.6:  This action was performed to update with data submitted since 
+the AIP was last archived.  The file /data/0-data/habsos_20210413.csv was 
+replaced by /data/0-data/habsos_20220225.csv.  a new directory was created /data/0-data/
+Support documentation was created.  Documents provided by the state partners 
+are included in this directory.The file Counting Lugols Samples v.3.pdf was moved to the Support documents directory from 0-data.  
+Additionally the lonlat and map files were updated.
+
+Files:
+about/
+This directory contains files created by NCEI staff and other 'negotiable'
+information between NCEI staff and the data provider. 
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data. Each row contains the geographical 
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees). NCEI may have corrected 
+  geographical positions that seemed to be in error when generating this file. 
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+0120767_map.jpg - 
+  Sample bounding box map for these data.
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data.  Each row contains the geographical
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees).  NCEI may have corrected
+  geographic positions that seemed to be in error when generating this file.
+  HOwever, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+data/0-data/
+This directory contains the data files as submitted to NCEI.
+
+The following is a summary of the differences between the data files in this
+revision of this accession and the previous revision: 
+
+Removed files: 1
+Updated files: 3
+New files: 2
+
+Removed files:
+
+/data/0-data/habsos_20210413.csv
+
+Updated file:
+
+/about/journal.txt
+/about/0120767_lonlat.txt
+/about/0120767.jpeg
+
+New files:
+
+/data/0-data/habsos_habsos_20220225.csv
+/data/0-data/Support Documentation/AL Data Documentation 2016.pdf/a
+/data/0-data/Support Documentation/AL Data Documentation 2008.pdf/a
+/data/0-data/Support Documentation/AL Data Documentation 2013.pdf/a
+/data/0-data/Support Documentation/MS Data Documentation 2016.pdf/a
+/data/0-data/Support Documentation/MS Data Documentation 2010.pdf/a
+/data/0-data/Support Documentation/MS Data Documentation 2020.pdf/a
+*****************************************************************
+Journal for accession number: 0120767
+Created on:                    20-04-13 17:23:03 UTC
+By:                            National Centers for Environmental Information
+
+Source: These data were submitted by the National Coastal Data Development
+	    Center. Data comes from multiple sources in Texas, Mississippi, 
+		and Florida to NCEI, where it is then compiled. Web-services are 
+		developed with the compiled data.
+
+Actions: Data was copied into the 0-data directory. 
+
+Version5.5:  This action was performed to update with data submitted since 
+the AIP was last archived.  The file /data/0-data/habsos_20200310 was 
+replaced by /data/0-data/habsos_20210413.  Additionally the lonlat and map 
+files were updated.
+
+Files:
+about/
+This directory contains files created by NCEI staff and other 'negotiable'
+information between NCEI staff and the data provider. 
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data. Each row contains the geographical 
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees). NCEI may have corrected 
+  geographical positions that seemed to be in error when generating this file. 
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+0120767_map.jpg - 
+  Sample bounding box map for these data.
+
+HABSOS_metadata.html - 
+  Contains hyperlink to FGDC metadata about the data submitted.
+
+HABSOS_metadata.txt - 
+  Contains FGDC metadata about the data submitted.
+
+HABSOS_metadata.xml - 
+  Contains FGDC metadata about the data submitted.
+
+HABSOS_metadataISO.xml - 
+  Contains ISO 19115-2  metadata about the data submitted.
+
+data/0-data/
+This directory contains the data files as submitted to NCEI.
+
+habsos_20210413.csv - Comma-separated-value file containing HABSOS data.
+
+Counting Lugols Samples v.3.pdf - PDF containing the methods of cell counting
+for HABSOS from the Florida Fish and Wildlife Research Institute.
+
+Cell_Counts_Accession.xml - XML file containing metadata to accompany the data file
+
+The following is a summary of the differences between the data files in this
+revision of this accession and the previous revision: 
+
+Removed files: 1
+Updated files: 3
+New files: 1
+
+Removed files:
+
+/data/0-data/habsos_20200310.csv
+
+Updated file:
+
+/about/journal.txt
+/about/0120767_lonlat.txt
+/about/0120767.jpeg
+
+New files:
+
+/data/0-data/habsos_20210413.csv
+
+*****************************************************************
+Journal for accession number: 0120767
+Created on:                    2020-03-20 17:23:03 UTC
+By:                            Jonathan Jackson, National Centers for Environmental Information
+
+Source: These data were submitted by the National Coastal Data Development
+	    Center. Data comes from multiple sources in Texas, Mississippi, 
+		and Florida to NCDDC, where it is then compiled. Web-services are 
+		developed with the compiled data.
+
+Actions: Data was copied into the 0-data directory. 
+
+Version4.4:  This action was performed to update with data submitted since 
+the AIP was last archived.  The file /data/0-data/habsos_20190211 was 
+replaced by /data/0-data/habsos_habsos_20200310.  Additionally the metadata file
+Cell_Counts_Accession was added. Files, /about/HABSOS_metadata.html, 
+/about/HABSOS_metadata.txt, /about/HABSOS_metadataISO.xml were removed.
+
+Files:
+about/
+This directory contains files created by NCEI staff and other 'negotiable'
+information between NCEI staff and the data provider. 
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data. Each row contains the geographical 
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees). NCEI may have corrected 
+  geographical positions that seemed to be in error when generating this file. 
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+0120767_map.jpg - 
+  Sample bounding box map for these data.
+
+HABSOS_metadata.html - 
+  Contains hyperlink to FGDC metadata about the data submitted.
+
+HABSOS_metadata.txt - 
+  Contains FGDC metadata about the data submitted.
+
+HABSOS_metadata.xml - 
+  Contains FGDC metadata about the data submitted.
+
+HABSOS_metadataISO.xml - 
+  Contains ISO 19115-2  metadata about the data submitted.
+
+data/0-data/
+This directory contains the data files as submitted to NCEI.
+
+habsos_20200310.csv - Comma-separated-value file containing HABSOS data.
+
+Counting Lugols Samples v.3.pdf - PDF containing the methods of cell counting
+for HABSOS from the Florida Fish and Wildlife Research Institute.
+
+Cell_Counts_Accession.xml - XML file containing metadata to accompany the data file
+
+The following is a summary of the differences between the data files in this
+revision of this accession and the previous revision: 
+
+Removed files: 4
+Updated files: 1
+New files: 2
+
+Removed files:
+
+/data/0-data/habsos_20190211.csv
+/about/HABSOS_metadata.html
+/about/HABSOS_metadata.txt
+/about/HABSOS_metadataISO.xml
+
+Updated file:
+
+/about/journal.txt
+
+New files:
+
+/data/0-data/habsos_20200310.csv
+/data/0-data/Cell_Counts_Accession.xml
+
+*****************************************************************
+Journal for accession number: 0120767
+Created on:                    2019-02-20 17:23:03 UTC
+By:                            Jonathan Jackson, National Centers for Environmental Information
+
+Source: These data were submitted by the National Coastal Data Development
+	    Center. Data comes from multiple sources in Texas, Mississippi, 
+		and Florida to NCDDC, where it is then compiled. Web-services are 
+		developed with the compiled data.
+
+Actions: Data was copied into the 0-data directory. 
+
+Version3.3:  This action was performed to update with data submitted since 
+the AIP was last archived.  The file /data/0-data/habsos_20180227 was 
+replaced by /data/0-data/habsos_20190211.
+
+Files:
+about/
+This directory contains files created by NCEI staff and other 'negotiable'
+information between NCEI staff and the data provider. 
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data. Each row contains the geographical 
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees). NCEI may have corrected 
+  geographical positions that seemed to be in error when generating this file. 
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+0120767_map.jpg - 
+  Sample bounding box map for these data.
+
+HABSOS_metadata.html - 
+  Contains hyperlink to FGDC metadata about the data submitted.
+
+HABSOS_metadata.txt - 
+  Contains FGDC metadata about the data submitted.
+
+HABSOS_metadata.xml - 
+  Contains FGDC metadata about the data submitted.
+
+HABSOS_metadataISO.xml - 
+  Contains ISO 19115-2  metadata about the data submitted.
+
+data/0-data/
+This directory contains the data files as submitted to NCEI.
+
+habsos_20190211.csv - Comma-separated-value file containing HABSOS data.
+
+Counting Lugols Samples v.3.pdf - PDF containing the methods of cell counting
+for HABSOS from the Florida Fish and Wildlife Research Institute.
+
+The following is a summary of the differences between the data files in this
+revision of this accession and the previous revision: 
+
+Removed files: 1
+Updated files: 0
+New files: 1
+
+Removed files:
+
+/data/0-data/habsos_20180227
+
+New files:
+
+/data/0-data/habsos_20190211
+
+*****************************************************************
+Journal for accession number: 0120767
+Created on:                    2018-03-06 19:16:03 UTC
+By:                            Jonathan Jackson, National Centers for Environmental Information
+
+Source: These data were submitted by the National Coastal Data Development
+	    Center. Data comes from multiple sources in Texas, Mississippi, 
+		and Florida to NCDDC, where it is then compiled. Web-services are 
+		developed with the compiled data.
+
+Actions: Data was copied into the 0-data directory. 
+
+Version2.2:  This action was performed to update with data submitted since 
+the AIP was originally archived.  The file /data/0-data/habsos_20140806 was 
+replaced by /data/0-data/habsos_20180227 and /data/1-data/ was removed as 
+the file was already in chronological order.
+
+Files:
+about/
+This directory contains files created by NCEI staff and other 'negotiable'
+information between NCEI staff and the data provider. 
+
+0120767_lonlat.txt - 
+  Contains sample locations for these data. Each row contains the geographical 
+  position where these data were collected (longitude in the left column and 
+  latitude in the right column, both in degrees). NCEI may have corrected 
+  geographical positions that seemed to be in error when generating this file. 
+  However, NCEI did not change the original data files under the directory 
+  data/0-data/.
+
+0120767_map.jpg - 
+  Sample bounding box map for these data.
+
+HABSOS_metadata.html - 
+  Contains hyperlink to FGDC metadata about the data submitted.
+
+HABSOS_metadata.txt - 
+  Contains FGDC metadata about the data submitted.
+
+HABSOS_metadata.xml - 
+  Contains FGDC metadata about the data submitted.
+
+HABSOS_metadataISO.xml - 
+  Contains ISO 19115-2  metadata about the data submitted.
+
+data/0-data/
+This directory contains the data files as submitted to NCEI.
+
+habsos_20180227.csv - Comma-separated-value file containing HABSOS data.
+
+Counting Lugols Samples v.3.pdf - PDF containing the methods of cell counting
+for HABSOS from the Florida Fish and Wildlife Research Institute.
+
+The following is a summary of the differences between the data files in this
+revision of this accession and the previous revision: 
+
+Removed files: 2
+Updated files: 0
+New files: 1
+
+Removed files:
+
+/data/0-data/habsos_20140806
+/data/1-data/habsos_20140806
+
+New files:
+
+/data/0-data/habsos_20180227
+
+*****************************************************************
+Journal for accession number: 0120767
+Created on:                    2014-08-07 12:58:03 UTC
+By:                            Katharine Woodard,OC1,NCDDC,2050141205
+
+Source: These data were submitted by the National Coastal Data Development
+Center. Data comes from multiple sources in Texas, Mississippi, and Florida to
+NCDDC, where it is then compiled. Web-services are developed with the compiled
+data.
+
+Actions: Data was copied into the 0-data directory. NODC personnel converted
+the CSV file to have the dates in chronological order. 
+
+Files:
+about/
+This directory contains files created by NODC staff and other 'negotiable'
+information between NODC staff and the data provider. 
+
+0120767_lonlat.txt - Contains sample locations for these data. Each row
+contains the geographical position where these data were collected (longitude
+in the left column and latitude in the right column, both in degrees). NODC
+may have corrected geographical positions that seemed to be in error when
+generating this file. However, NODC did not change the original data files
+under the directory data/0-data/.
+
+0120767_map.jpg - Sample location map for these data.
+
+HABSOS_metadata.htm - Contains hyperlink to FGDC metadata about the data
+submitted.
+
+HABSOS_metadata.txt - Contains FGDC metadata about the data submitted.
+
+HABSOS_metadata.xml - Contains FGDC metadata about the data submitted.
+
+HABSOS_metadataISO.xml - Contains ISO 19115-2  metadata about the data 
+submitted.
+
+data/0-data/
+This directory contains the data files as submitted to NODC.
+
+habsos_20140806.csv - Comma-separated-value file containing HABSOS data.
+
+Counting Lugols Samples v.3.pdf - PDF containing the methods of cell counting
+for HABSOS from the Florida Fish and Wildlife Research Institute.
+
+data/1-data/
+This directory contains files that were converted by NODC from their
+originally submitted format under the 0-data/ directory to an archival format.
+
+habsos_20140806.csv - Comma-separated-value file containing the same data that
+is in 0-data/, however this file was put in chronological order by date the
+data was collected.

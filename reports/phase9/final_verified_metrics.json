@@ -1,0 +1,36 @@
+{
+    "models": {
+        "caml": {
+            "model_id": "caml_phase3_champion",
+            "algorithm": "Weighted Random Forest",
+            "dataset": "CAML (Freshwater)",
+            "validation_metrics": {
+                "accuracy": 0.6323,
+                "f1_macro": 0.5243,
+                "dangerous_recall": 0.9480
+            },
+            "ais_metrics": {
+                "ais_model_id": "caml_nsa_v1",
+                "validation_balanced_accuracy": 0.8615,
+                "anomaly_recall": 0.7348,
+                "false_positive_rate": 0.0119
+            }
+        },
+        "habsos": {
+            "model_id": "habsos_phase3_champion",
+            "algorithm": "Weighted Logistic Regression",
+            "dataset": "HABSOS (Marine)",
+            "validation_metrics": {
+                "accuracy": 0.6758,
+                "f1_macro": 0.3411,
+                "dangerous_recall": 0.4873
+            },
+            "ais_metrics": {
+                "ais_model_id": "habsos_nsa_v1",
+                "validation_balanced_accuracy": 0.5000,
+                "anomaly_recall": 0.0000,
+                "false_positive_rate": 0.0000
+            }
+        }
+    }
+}

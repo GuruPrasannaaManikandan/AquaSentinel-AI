@@ -1,0 +1,72 @@
+{
+    "creation_date_utc": "2026-07-08 12:45:00",
+    "registry_status": "ACTIVE",
+    "models": [
+        {
+            "ais_model_id": "caml_nsa_v1",
+            "dataset": "CAML (Freshwater)",
+            "algorithm": "Negative Selection Algorithm (NSA)",
+            "version": "NSA-CAML-v1",
+            "self_definition": "severity == 1",
+            "feature_schema": [
+                "lat",
+                "lon",
+                "distance_to_water_m",
+                "Month_sin",
+                "Month_cos",
+                "DayOfYear_sin",
+                "DayOfYear_cos"
+            ],
+            "preprocessing": "AISPreprocessor (MinMax [0, 1] + Median Imputer)",
+            "affinity_metric": "euclidean",
+            "detector_count": 1000,
+            "self_radius": 0.6,
+            "validation_metrics": {
+                "accuracy": 0.8906666666666667,
+                "balanced_accuracy": 0.8614588477404891,
+                "precision": 0.9747126436781609,
+                "recall": 0.7348353552859619,
+                "f1": 0.8379446640316206,
+                "mcc": 0.775100791200524,
+                "false_positive_rate": 0.011917659804983749,
+                "true_negative_rate": 0.9880823401950163
+            },
+            "artifact_path": "models/ais/caml_nsa.joblib",
+            "created_at": "2026-07-08 12:45:00"
+        },
+        {
+            "ais_model_id": "habsos_nsa_v1",
+            "dataset": "HABSOS (Marine)",
+            "algorithm": "Negative Selection Algorithm (NSA)",
+            "version": "NSA-HABSOS-v1",
+            "self_definition": "CATEGORY == 'normal'",
+            "feature_schema": [
+                "LATITUDE",
+                "LONGITUDE",
+                "SAMPLE_DEPTH",
+                "SALINITY",
+                "WATER_TEMP",
+                "Month_sin",
+                "Month_cos",
+                "DayOfYear_sin",
+                "DayOfYear_cos"
+            ],
+            "preprocessing": "AISPreprocessor (MinMax [0, 1] + Surface Depth 0.0 Imputer + Median Imputer)",
+            "affinity_metric": "euclidean",
+            "detector_count": 500,
+            "self_radius": 0.2,
+            "validation_metrics": {
+                "accuracy": 0.884827511625392,
+                "balanced_accuracy": 0.5,
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "mcc": 0.0,
+                "false_positive_rate": 0.0,
+                "true_negative_rate": 1.0
+            },
+            "artifact_path": "models/ais/habsos_nsa.joblib",
+            "created_at": "2026-07-08 12:45:00"
+        }
+    ]
+}

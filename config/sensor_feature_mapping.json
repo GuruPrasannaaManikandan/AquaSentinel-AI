@@ -1,0 +1,67 @@
+{
+    "mappings": {
+        "gps_latitude": {
+            "telemetry_field": "latitude",
+            "caml_feature": "lat",
+            "habsos_feature": "LATITUDE",
+            "used_by_caml": true,
+            "used_by_habsos": true,
+            "used_by_edge_rules": false,
+            "description": "Spatial coordinate input"
+        },
+        "gps_longitude": {
+            "telemetry_field": "longitude",
+            "caml_feature": "lon",
+            "habsos_feature": "LONGITUDE",
+            "used_by_caml": true,
+            "used_by_habsos": true,
+            "used_by_edge_rules": false,
+            "description": "Spatial coordinate input"
+        },
+        "water_temp": {
+            "telemetry_field": "temperature_c",
+            "caml_feature": null,
+            "habsos_feature": "WATER_TEMP",
+            "used_by_caml": false,
+            "used_by_habsos": true,
+            "used_by_edge_rules": true,
+            "description": "Water temperature in degrees Celsius"
+        },
+        "salinity": {
+            "telemetry_field": "salinity_ppt",
+            "caml_feature": null,
+            "habsos_feature": "SALINITY",
+            "used_by_caml": false,
+            "used_by_habsos": true,
+            "used_by_edge_rules": true,
+            "description": "Salinity concentration in parts per thousand (ppt)"
+        },
+        "ph": {
+            "telemetry_field": "ph",
+            "caml_feature": null,
+            "habsos_feature": null,
+            "used_by_caml": false,
+            "used_by_habsos": false,
+            "used_by_edge_rules": true,
+            "description": "Acidity / alkalinity of water"
+        },
+        "turbidity": {
+            "telemetry_field": "turbidity_ntu",
+            "caml_feature": null,
+            "habsos_feature": null,
+            "used_by_caml": false,
+            "used_by_habsos": false,
+            "used_by_edge_rules": true,
+            "description": "Water turbidity in NTU"
+        },
+        "dissolved_oxygen": {
+            "telemetry_field": "dissolved_oxygen_mg_l",
+            "caml_feature": null,
+            "habsos_feature": null,
+            "used_by_caml": false,
+            "used_by_habsos": false,
+            "used_by_edge_rules": true,
+            "description": "Dissolved oxygen concentration in mg/L"
+        }
+    }
+}

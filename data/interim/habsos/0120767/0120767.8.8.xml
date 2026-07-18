@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<accession manifest_version="2">
+  <head>
+    <id>0120767</id>
+    <version>8.8</version>
+    <timestamp>2024-05-10 19:12:33+00</timestamp>
+    <host>master.ams.ncei.noaa.gov</host>
+    <directory>/nodc/archive/arc0069/0120767/8.8/</directory>
+    <file_count>20</file_count>
+    <byte_count>39412970</byte_count>
+  </head>
+  <body>
+    <files>
+      <file>
+        <path>NCEI-Readme.txt</path>
+        <digest algorithm="md5">e91932714ba31f21222c897c53a16b96</digest>
+        <digest algorithm="sha1">82edb6b02edde6773d1dbf60f0daa14dd0a2399a</digest>
+        <digest algorithm="sha256">8a28ff0cfd348380edf08df45dffd3af0f7b21e36693b33c2caacf099fc00e47</digest>
+        <digest algorithm="sha384">5f34016a6e2d1509b8a30b4831c1a216df54bb1e865cea0fb6a1ce6f94ac19c39f8abea4ce4fd1d2fc9dbbcc808a7158</digest>
+        <digest algorithm="sha512">3ef7e6ffc7c31d8f016ae4c3654e4476ffebdeef8984c1cca0da3cd3b8410e5b19b0d985d06ecd58609ddce2f39a6add62c08580e018351ab2827c4b06da39c2</digest>
+        <type_category>regular</type_category>
+        <type>text</type>
+        <permissions>-rw-rw-r--</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>1847</size>
+        <blksize>32768</blksize>
+        <blocks>8</blocks>
+        <modtime>2018-06-07 19:47:08+00</modtime>
+        <changetime>2024-05-10 19:12:26+00</changetime>
+        <acctime>2024-05-10 19:12:31+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>26869794</inode>
+      </file>
+      <file>
+        <path>about</path>
+        <digest algorithm="md5">d41d8cd98f00b204e9800998ecf8427e</digest>
+        <digest algorithm="sha1">da39a3ee5e6b4b0d3255bfef95601890afd80709</digest>
+        <digest algorithm="sha256">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</digest>
+        <digest algorithm="sha384">38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b</digest>
+        <digest algorithm="sha512">cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e</digest>
+        <type_category>irregular</type_category>
+        <type>directory</type>
+        <permissions>drwxrwxr-x</permissions>
+        <linkcount>2</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>4096</size>
+        <blksize>32768</blksize>
+        <blocks>8</blocks>
+        <modtime>2023-08-30 19:43:05+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:31+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3096582</inode>
+      </file>
+      <file>
+        <path>about/0120767_lonlat.txt</path>
+        <digest algorithm="md5">d24734696292c1798ba43ccc7e7748ca</digest>
+        <digest algorithm="sha1">00145497c2a1d43239e66903af98733dbfa8b87c</digest>
+        <digest algorithm="sha256">bd5b30d5c4440c4d9e07bfdddbe9aea7c3a1e9a5a7ec258987d251c0dccb8488</digest>
+        <digest algorithm="sha384">83e4b864fb9c6dc629e04204c7a76596545f9e544f3f5c958c91058cefd0c4321e7f69d04c76947fadaafd3a105e41e2</digest>
+        <digest algorithm="sha512">88f79dd15fd721c964ea72412fc0e7bc78ee940aebeb737cd97f8dfeef32d9537cd78fbf01ca1dc6de802292af205d84f0e395058b17965a9b13800ff3a4ea36</digest>
+        <type_category>regular</type_category>
+        <type>text</type>
+        <permissions>-rw-rw-r--</permissions>
+        <linkcount>1</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>3926586</size>
+        <blksize>32768</blksize>
+        <blocks>7672</blocks>
+        <modtime>2024-05-06 20:25:53+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:31+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015554</inode>
+      </file>
+      <file>
+        <path>about/0120767_map.jpg</path>
+        <digest algorithm="md5">b5ccdf29dcb7dbad468dc1151a4a9098</digest>
+        <digest algorithm="sha1">577a8213574942244dabf5915769e1cb8401edf3</digest>
+        <digest algorithm="sha256">769b0eaa5821fccc877df874a0d21979be4af7dfe3d4441847da1790f37061ba</digest>
+        <digest algorithm="sha384">eb15f8fbba385a2c35b96c73a5f709917468b6f2642cc64a42a856621bd0bfd94354e132f249a01d83196fa0fadb515a</digest>
+        <digest algorithm="sha512">e1bfab5da6cb43ac06bb8256c84592cc6345d40273f0f714da912960ac7d13200160f27b26b31bf8914a10f6602aa101e458d343e4901745a9f12686606f95c2</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rw-rw-r--</permissions>
+        <linkcount>1</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>373821</size>
+        <blksize>32768</blksize>
+        <blocks>736</blocks>
+        <modtime>2024-05-06 20:26:22+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:31+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015555</inode>
+      </file>
+      <file>
+        <path>about/journal.txt</path>
+        <digest algorithm="md5">b223a7460254f686421b9f2fff9b5583</digest>
+        <digest algorithm="sha1">26b28abc721b398f6143088ce67fcc6e13d1bb49</digest>
+        <digest algorithm="sha256">d9dae1944b647cd74a9b81ee53e41547875fc222319617425cfc294a4ebab7d7</digest>
+        <digest algorithm="sha384">e8e1a6661e72efae087fc33aec07ede948bf217c3363bf2249c7072d180c443a8e22f1d400f7b3776a5c5ae30f38f481</digest>
+        <digest algorithm="sha512">97fabafdbf40c8adccd6b0b739cf5506d2d4c222f9f8e7ffad112cbea46778e8a8510c199fc116a208887a7bd3acb48e4887ce3a5f19a1367a5013e8100e582b</digest>
+        <type_category>regular</type_category>
+        <type>text</type>
+        <permissions>-rw-rw-r--</permissions>
+        <linkcount>1</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>20595</size>
+        <blksize>32768</blksize>
+        <blocks>48</blocks>
+        <modtime>2024-05-06 21:08:43+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:31+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015556</inode>
+      </file>
+      <file>
+        <path>data</path>
+        <digest algorithm="md5">d41d8cd98f00b204e9800998ecf8427e</digest>
+        <digest algorithm="sha1">da39a3ee5e6b4b0d3255bfef95601890afd80709</digest>
+        <digest algorithm="sha256">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</digest>
+        <digest algorithm="sha384">38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b</digest>
+        <digest algorithm="sha512">cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e</digest>
+        <type_category>irregular</type_category>
+        <type>directory</type>
+        <permissions>drwxrwxr-x</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>4096</size>
+        <blksize>32768</blksize>
+        <blocks>8</blocks>
+        <modtime>2018-03-06 20:12:49+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3096583</inode>
+      </file>
+      <file>
+        <path>data/0-data</path>
+        <digest algorithm="md5">d41d8cd98f00b204e9800998ecf8427e</digest>
+        <digest algorithm="sha1">da39a3ee5e6b4b0d3255bfef95601890afd80709</digest>
+        <digest algorithm="sha256">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</digest>
+        <digest algorithm="sha384">38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b</digest>
+        <digest algorithm="sha512">cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e</digest>
+        <type_category>irregular</type_category>
+        <type>directory</type>
+        <permissions>drwxrwxr-x</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>4096</size>
+        <blksize>32768</blksize>
+        <blocks>8</blocks>
+        <modtime>2024-05-06 20:54:14+00</modtime>
+        <changetime>2024-05-10 19:12:30+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3588103</inode>
+      </file>
+      <file>
+        <path>data/0-data/Cell_Counts_Accession.xml</path>
+        <digest algorithm="md5">331b8278e26bee4ba4a8a813aecebbc1</digest>
+        <digest algorithm="sha1">76277443bef2291e7da0b4a4ac55de77163e8135</digest>
+        <digest algorithm="sha256">6b6f71f44ceee33e8a244049492be3adf0934a6bd979c9f2ca12b6932f66f775</digest>
+        <digest algorithm="sha384">e75d4fe1133cc137e8ceb449ef07cc865340b0dc5bbd07c9c82bcc32f689de17719d29d00d62a49e70d10adcbb627b42</digest>
+        <digest algorithm="sha512">6b2fc9862ed65b2609b5bd2dd8b19919238aca0f6bd8d58898764886ece3057130295dd966ba3fad5f7c28982d94a46b6e7dd44fd3b0e16768d154c30815c39d</digest>
+        <type_category>regular</type_category>
+        <type>text</type>
+        <permissions>-rw-rw-r--</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>44971</size>
+        <blksize>32768</blksize>
+        <blocks>88</blocks>
+        <modtime>2020-03-12 19:57:41+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>2884274</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents</path>
+        <digest algorithm="md5">d41d8cd98f00b204e9800998ecf8427e</digest>
+        <digest algorithm="sha1">da39a3ee5e6b4b0d3255bfef95601890afd80709</digest>
+        <digest algorithm="sha256">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</digest>
+        <digest algorithm="sha384">38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b</digest>
+        <digest algorithm="sha512">cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e</digest>
+        <type_category>irregular</type_category>
+        <type>directory</type>
+        <permissions>drwxrwxr-x</permissions>
+        <linkcount>2</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>4096</size>
+        <blksize>32768</blksize>
+        <blocks>8</blocks>
+        <modtime>2023-08-30 20:09:26+00</modtime>
+        <changetime>2024-05-10 19:12:30+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3588104</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/AL Data Documentation 2008.pdf</path>
+        <digest algorithm="md5">d1cdb2e69c3f1f7b0c66ebdb7086c2ac</digest>
+        <digest algorithm="sha1">ffb7250cf9d2f06ca9a557406d64473743fb2062</digest>
+        <digest algorithm="sha256">ecf897412e09b834ff783d29c4bb7bc603a4513b57f47d82400ca9e75fe58633</digest>
+        <digest algorithm="sha384">70a50a4c5d4d3568ee1f25c5b798c7fbb643241465d8fb3636a9f7b20d1eff391659763bbd89a7b168cc60951c0f9ff8</digest>
+        <digest algorithm="sha512">a1df7ef882da941f06fab0e182809f444ff1defa954c85e0d470209bd8e954d494687236710f51f02164a34cc6f24934ae0a037db1bddd235ca59df2dfa21c43</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>768358</size>
+        <blksize>32768</blksize>
+        <blocks>1504</blocks>
+        <modtime>2022-03-09 16:05:23+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015514</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/AL Data Documentation 2013.pdf</path>
+        <digest algorithm="md5">6d99dd39d66aefb7b78e12db60dfb116</digest>
+        <digest algorithm="sha1">ac7802c137eba2523c4c8d3bfddd4b860e3e9cce</digest>
+        <digest algorithm="sha256">ba82c54fca225069e67dd8a0d09ede69fb0f7118fa1cb90b498a65e85b8222b8</digest>
+        <digest algorithm="sha384">800479a9f4d8568d090ae0e5922683e668f1b0456059c33d22d229e63475fe73ffa549a695bdef5a44b1ba60ae241e44</digest>
+        <digest algorithm="sha512">db199e74afe59578c5c6496d63b651682ef1a7b31a754ec152e287c431838bb7b88c463c5fbb89bb6964f2958919647a5594f9ec5683df048a209cdab8044096</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>791426</size>
+        <blksize>32768</blksize>
+        <blocks>1552</blocks>
+        <modtime>2022-03-09 16:05:29+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015515</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/AL Data Documentation 2016.pdf</path>
+        <digest algorithm="md5">2d12481152370df80e75d0e4dbc9f0b9</digest>
+        <digest algorithm="sha1">c55fa4c36f41e39371827e6939180da4714fe379</digest>
+        <digest algorithm="sha256">b89f58883285b6a2d8d9eb41ee22ee807f73634a7f041687ba4f24f1b60a2d4e</digest>
+        <digest algorithm="sha384">e27bc3937cad0c8b3a063f9b5d19fef0a5b9265389e66dfd186b7b505b0e6bd7fcc92f18ed48b6ad94671c038567ffb5</digest>
+        <digest algorithm="sha512">39691e5b167de851519bc8ac2f400d45ccf790309167878b730e35a1065ace6278c9a99399a8c63f1d68ef143e6f86b9ba3d74e54f5c00a0e48f23f1aac3530d</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>820551</size>
+        <blksize>32768</blksize>
+        <blocks>1608</blocks>
+        <modtime>2022-03-09 16:05:25+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015516</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/Counting Lugols Samples v.3 (May 2010).pdf</path>
+        <digest algorithm="md5">f1810be04bf9a465e693eefbe45254b6</digest>
+        <digest algorithm="sha1">c19e99eafb15d20a11d33e495e2324bbe9082beb</digest>
+        <digest algorithm="sha256">131b87b9c8634e0b2490519e09d1cac63a2589aa473f2ad816b4a4f59fa9a99c</digest>
+        <digest algorithm="sha384">e3b82de4671dbc4bf5a74a541e44fc4d67c13d3bb11d9548373c22114a61102fb3fad4c2549ea925c63abee8f7959662</digest>
+        <digest algorithm="sha512">e59defb8bae02e50b2d8db4195bb1ed39d54264c21882588f74d3ed790923e36ea5a44b2158035328f4b04bbf96d789c9ce16c7b6f9742b55f8e35711d461a23</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>2</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>172341</size>
+        <blksize>32768</blksize>
+        <blocks>344</blocks>
+        <modtime>2023-08-30 20:07:50+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015506</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/FWRI-HAB counting protocol for phytoplankton (May 2020).pdf</path>
+        <digest algorithm="md5">2c7fe89c9514ab68ea6bca9ce68b8d5d</digest>
+        <digest algorithm="sha1">9efccf3ee49d5e6df638a9752d5a6aeff0388e00</digest>
+        <digest algorithm="sha256">c803bb6f599103d7b12cc8c3bc4832831bede811fb658a912bb9bca96354ce87</digest>
+        <digest algorithm="sha384">934d060a60fd893388c58062daea653ca269d35c1cd301f4b406d973476513a17e23f5f9c492e40c1cf5cbf0d224089e</digest>
+        <digest algorithm="sha512">c64529610538aa75ce41999c011cac7e34bfd359fbd0cbbe916102fb6aa0eeb90d5ff76bb6376a2ba16945c977a32835e8d7c554c288b5e7e6722d6584648663</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>2</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>323641</size>
+        <blksize>32768</blksize>
+        <blocks>640</blocks>
+        <modtime>2023-08-30 17:38:04+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015507</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/FWRI-HAB sampling protocol for phytoplankton (Feb2019).pdf</path>
+        <digest algorithm="md5">a1cdef3047e0a11b24e516f336ff595d</digest>
+        <digest algorithm="sha1">b68ecd085a9b3b6dd15ab632a060e35854c67d77</digest>
+        <digest algorithm="sha256">b50c97655cee50990df423c68696fa71375d1e8b89f20b4ffa62774c119c5fe0</digest>
+        <digest algorithm="sha384">008990f6935e455c23acf3dc9fa0b9c0334533a533b91f741b36b909c270beee20f3486c92c761f5f29fc0599e1d80dc</digest>
+        <digest algorithm="sha512">e25eda099a400e28957a23ab986ece2743220d12057ee41f01b028a711df30d998f0158688c5484494b97bebb9fd7610e4865a61c4c9b812a370be6774110eb8</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>2</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>205346</size>
+        <blksize>32768</blksize>
+        <blocks>408</blocks>
+        <modtime>2023-08-30 17:38:22+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015508</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/HABSOS_Data_Dictionary.xlsx</path>
+        <digest algorithm="md5">32f73c436ee3371e369ca8328192add7</digest>
+        <digest algorithm="sha1">76e26e69da99ba46c52ff137e6b51d49ffed0c4f</digest>
+        <digest algorithm="sha256">c53bc9c2baedc95d089468ded2fc00ffec23d348e306b17899e2eacc436aafbb</digest>
+        <digest algorithm="sha384">59b61b7e97ffef9430f22c722ac2eb5e26cc5a095f59e3cae7fe2d5771cbbc88579ebe379e7a0f18de848c63e906d656</digest>
+        <digest algorithm="sha512">e380aa174c4e2670cf90869afbda5c4a92c91c54b0433ac227e70e014ff532d3c1038b56911d751a15c577ec957d2ca44b61573f72ef85b646f118b8ae8c2b3f</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>1</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>10054</size>
+        <blksize>32768</blksize>
+        <blocks>24</blocks>
+        <modtime>2024-05-06 21:09:26+00</modtime>
+        <changetime>2024-05-10 19:12:30+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3539896</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/MS Data Documentation 2010.pdf</path>
+        <digest algorithm="md5">529f6a3601dcca51b9794a24bc1f3faf</digest>
+        <digest algorithm="sha1">b3dfb3474cf7966dfb8cc54b6fc80db2f926f310</digest>
+        <digest algorithm="sha256">f7004d8806bb92b6d023f6bac4f515f45d8b389912e35b3a3a98cfd18c3a9337</digest>
+        <digest algorithm="sha384">abef5bf641f96da159d067a8d3b996fb00725d84ad33dae77b680b61aa05c7cb9884b4696f98f4bdc4dea62f0793101e</digest>
+        <digest algorithm="sha512">87137c99f2e7097a64a171c03aa4480f872e4fc81e1550c03d07bc544ceba85a3d4f03a91bfcd4425c9d54de2ca30a27792949057cf23cb4e623c61e9ae7be09</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>694044</size>
+        <blksize>32768</blksize>
+        <blocks>1360</blocks>
+        <modtime>2022-03-09 16:05:27+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015518</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/MS Data Documentation 2016.pdf</path>
+        <digest algorithm="md5">8ae03a608fddffd5068913cf1f924744</digest>
+        <digest algorithm="sha1">fd4a8f409c15f92d65ab70b486153e07ce9325c8</digest>
+        <digest algorithm="sha256">0bb866bf51c42355a3c632ab7f56d3f0edcee6b8a6799689d75855d3d31e2354</digest>
+        <digest algorithm="sha384">d889f913d47aba16f8951ae6cd3c16d5e9d9f573140fa0cb1c1da57c4efecf815207d7b1a3f2f6fa67db38859f848493</digest>
+        <digest algorithm="sha512">0fe93becd3f37cfa480940605cdb94fd1d63e904f3ea8850e26106050f9a690bc165d2aba5a72e143c3b0b3ad8fddcaba0668cf26c2d881f6a5fca939f92221d</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>670065</size>
+        <blksize>32768</blksize>
+        <blocks>1312</blocks>
+        <modtime>2022-03-09 16:05:01+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015519</inode>
+      </file>
+      <file>
+        <path>data/0-data/Support Documents/MS Data Documentation 2020.pdf</path>
+        <digest algorithm="md5">731f48058936d05c517bc4e84b3ce978</digest>
+        <digest algorithm="sha1">506dc8f7fc7fbfd1d166a9e13be420ec82ee7c34</digest>
+        <digest algorithm="sha256">73e7ad81f73820f6879518d42e3d477bb5c465cf4324b29caeb2d422d4630bb9</digest>
+        <digest algorithm="sha384">2691f41b97220775a52f3d796d83a646af6178cc1b51d895cc2f40ddefe37e7c070801e317cae164cce2a30b49f19094</digest>
+        <digest algorithm="sha512">a6d1867df4b3efada357e7254408d73ef65c3a93e3cc9450b15111b3709ab69ae064a64e90b15e9a814a56e48ea78326e797a921443fdf2ec6376e21d8a06a44</digest>
+        <type_category>regular</type_category>
+        <type>binary</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>3</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>621441</size>
+        <blksize>32768</blksize>
+        <blocks>1216</blocks>
+        <modtime>2022-03-09 16:05:20+00</modtime>
+        <changetime>2024-05-10 19:12:27+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:33+00</sumtime>
+        <inode>3015520</inode>
+      </file>
+      <file>
+        <path>data/0-data/habsos_20240430.csv</path>
+        <digest algorithm="md5">12e8278850adfbe4e7378240c76448c1</digest>
+        <digest algorithm="sha1">203e0520cab4a35c6ac9d5b278afeacc299e8d2c</digest>
+        <digest algorithm="sha256">0c561afc3239fc885afd161bbc0c3e9826969019f8266ffaade4adca7f700596</digest>
+        <digest algorithm="sha384">8e63096b7ee700a8ec9f9095c13c24f21df8a78a2aeee1fb40d55e22b9a4d9b3af4f803029ec9badcd6a9d7101f2c990</digest>
+        <digest algorithm="sha512">656fce45217560bd3f640de151ee02a0f46957fa0245058780cf3818a31cf29fb990a1d1c3b021fac5a205057038c6b197c17adc70e4b61a5713ac1d569a8cac</digest>
+        <type_category>regular</type_category>
+        <type>text</type>
+        <permissions>-rwxr--r--</permissions>
+        <linkcount>1</linkcount>
+        <user>root</user>
+        <group>root</group>
+        <size>29951499</size>
+        <blksize>32768</blksize>
+        <blocks>58504</blocks>
+        <modtime>2024-05-01 15:11:00+00</modtime>
+        <changetime>2024-05-10 19:12:30+00</changetime>
+        <acctime>2024-05-10 19:12:32+00</acctime>
+        <sumtime>2024-05-10 19:12:34+00</sumtime>
+        <inode>3539895</inode>
+      </file>
+    </files>
+  </body>
+</accession>

@@ -1,0 +1,72 @@
+# Project Configuration Settings
+project:
+  name: "aquatic-ais-iot"
+  version: "1.0.0"
+  random_seed: 42
+
+paths:
+  raw_dir: "data/raw"
+  interim_dir: "data/interim"
+  processed_dir: "data/processed"
+  models_dir: "models"
+  reports_dir: "reports"
+  figures_dir: "reports/figures"
+  audit_dir: "reports/data_audit"
+  logs_dir: "logs"
+
+datasets:
+  caml:
+    raw_file: "0c233b5a95_CAML_cyanobacteria_abundance_20211229_R1.sb"
+    documents_archive: "0c233b5a95_documents.tgz.sb"
+    missing_value: -9999.0
+    delimiter: ","
+    fields:
+      - uid
+      - data_provider
+      - region
+      - lat
+      - lon
+      - date
+      - time
+      - abun
+      - severity
+      - distance_to_water_m
+    units:
+      lat: "DEG"
+      lon: "DEG"
+      date: "yyyymmdd"
+      time: "hh:mm:ss"
+      abun: "cells/L"
+      distance_to_water_m: "m"
+
+  habsos:
+    raw_archive: "0120767.8.8.tar.gz"
+    csv_member: "0120767/8.8/data/0-data/habsos_20240430.csv"
+    missing_value: null  # standard CSV empty cell (NaN)
+    fields:
+      - STATE_ID
+      - DESCRIPTION
+      - LATITUDE
+      - LONGITUDE
+      - SAMPLE_DATE
+      - SAMPLE_TIME
+      - SAMPLE_DEPTH
+      - GENUS
+      - SPECIES
+      - CATEGORY
+      - CELLCOUNT
+      - CELLCOUNT_UNIT
+      - CELLCOUNT_QA
+      - SALINITY
+      - SALINITY_UNIT
+      - SALINITY_QA
+      - WATER_TEMP
+      - WATER_TEMP_UNIT
+      - WATER_TEMP_QA
+      - WIND_DIR
+      - WIND_DIR_UNIT
+      - WIND_DIR_QA
+      - WIND_SPEED
+      - WIND_SPEED_UNIT
+      - WIND_SPEED_QA
+      - OBJECTID

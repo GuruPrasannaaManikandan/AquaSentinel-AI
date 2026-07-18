@@ -1,0 +1,112 @@
+{
+    "scenarios": [
+        {
+            "scenario_id": "freshwater_normal",
+            "name": "Freshwater Normal Condition",
+            "device_id": "AQUA_FRESH_001",
+            "environmental_state": "NORMAL",
+            "expected_route": "GATEWAY_INFERENCE",
+            "expected_ml_output": "1",
+            "expected_ml_confidence_band": "HIGH",
+            "expected_ais_output": "SELF",
+            "expected_fusion_output": "NORMAL",
+            "expected_actuators": {
+                "green_led": "ON",
+                "yellow_led": "OFF",
+                "red_led": "OFF",
+                "buzzer": "OFF",
+                "pump": "OFF"
+            }
+        },
+        {
+            "scenario_id": "freshwater_bloom",
+            "name": "Freshwater Bloom-Risk Condition",
+            "device_id": "AQUA_FRESH_001",
+            "environmental_state": "KNOWN_BLOOM_RISK",
+            "expected_route": "GATEWAY_INFERENCE",
+            "expected_ml_output": "4",
+            "expected_ml_confidence_band": "HIGH",
+            "expected_ais_output": "SELF",
+            "expected_fusion_output": "WARNING",
+            "expected_actuators": {
+                "green_led": "OFF",
+                "yellow_led": "ON",
+                "red_led": "OFF",
+                "buzzer": "OFF",
+                "pump": "ON"
+            }
+        },
+        {
+            "scenario_id": "marine_normal",
+            "name": "Marine Normal Condition",
+            "device_id": "AQUA_MARINE_001",
+            "environmental_state": "NORMAL",
+            "expected_route": "GATEWAY_INFERENCE",
+            "expected_ml_output": "1",
+            "expected_ml_confidence_band": "HIGH",
+            "expected_ais_output": "SELF",
+            "expected_fusion_output": "NORMAL",
+            "expected_actuators": {
+                "green_led": "ON",
+                "yellow_led": "OFF",
+                "red_led": "OFF",
+                "buzzer": "OFF",
+                "pump": "OFF"
+            }
+        },
+        {
+            "scenario_id": "marine_bloom",
+            "name": "Marine Bloom-Risk Condition",
+            "device_id": "AQUA_MARINE_001",
+            "environmental_state": "KNOWN_BLOOM_RISK",
+            "expected_route": "GATEWAY_INFERENCE",
+            "expected_ml_output": "warning",
+            "expected_ml_confidence_band": "HIGH",
+            "expected_ais_output": "SELF",
+            "expected_fusion_output": "WARNING",
+            "expected_actuators": {
+                "green_led": "OFF",
+                "yellow_led": "ON",
+                "red_led": "OFF",
+                "buzzer": "OFF",
+                "pump": "ON"
+            }
+        },
+        {
+            "scenario_id": "sensor_fault",
+            "name": "Ecosystem Sensor Fault",
+            "device_id": "AQUA_FRESH_001",
+            "environmental_state": "SENSOR_FAULT",
+            "expected_route": "EDGE_REJECTION",
+            "expected_ml_output": "BYPASSED",
+            "expected_ml_confidence_band": "LOW",
+            "expected_ais_output": "BYPASSED",
+            "expected_fusion_output": "SENSOR_FAULT",
+            "expected_actuators": {
+                "green_led": "OFF",
+                "yellow_led": "ON",
+                "red_led": "OFF",
+                "buzzer": "OFF",
+                "pump": "OFF"
+            }
+        },
+        {
+            "scenario_id": "network_failure",
+            "name": "Network Disconnect & Recovery",
+            "device_id": "AQUA_FRESH_001",
+            "environmental_state": "NETWORK_FAILURE",
+            "expected_route": "DISCONNECTED",
+            "expected_ml_output": "BYPASSED",
+            "expected_ml_confidence_band": "LOW",
+            "expected_ais_output": "BYPASSED",
+            "expected_fusion_output": "UNKNOWN",
+            "expected_actuators": {
+                "green_led": "OFF",
+                "yellow_led": "OFF",
+                "red_led": "OFF",
+                "buzzer": "OFF",
+                "pump": "OFF"
+            }
+        }
+    ]
+}

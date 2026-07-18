@@ -1,0 +1,15 @@
+{
+    "fusion_id": "fusion_nsa_ml_v1",
+    "version": "1.0.0",
+    "policy_path": "config/fusion_policy.json",
+    "active_ml_manifest_version": "1.0.0",
+    "active_ais_registry_version": "1.0.0",
+    "status": "DEPLOYED",
+    "created_at": "2026-07-08 18:25:00",
+    "validation_analysis_metadata": {
+        "caml_validation_agreement_rate": 0.9218472468916519,
+        "habsos_validation_agreement_rate": 0.7143397858765005,
+        "caml_unknown_anomaly_count": 14,
+        "habsos_unknown_anomaly_count": 0
+    }
+}

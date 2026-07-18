@@ -1,0 +1,62 @@
+{
+    "project": "aquatic-ais-iot",
+    "caml": {
+        "train_shape": [
+            19038,
+            18
+        ],
+        "val_shape": [
+            2252,
+            18
+        ],
+        "test_shape": [
+            2280,
+            18
+        ],
+        "target_col": "severity",
+        "leakage_cols_dropped": [
+            "abun",
+            "uid",
+            "date",
+            "time"
+        ]
+    },
+    "habsos": {
+        "train_shape": [
+            185720,
+            37
+        ],
+        "val_shape": [
+            18494,
+            37
+        ],
+        "test_shape": [
+            7620,
+            37
+        ],
+        "target_col": "CATEGORY",
+        "category_distribution_train": {
+            "normal": 159891,
+            "warning": 21679,
+            "critical": 3294,
+            "NaN": 856
+        },
+        "leakage_cols_dropped": [
+            "CELLCOUNT",
+            "GENUS",
+            "SPECIES",
+            "CELLCOUNT_UNIT",
+            "CELLCOUNT_QA",
+            "SALINITY_QA",
+            "WATER_TEMP_QA",
+            "WIND_DIR",
+            "WIND_SPEED",
+            "WIND_DIR_QA",
+            "WIND_SPEED_QA",
+            "OBJECTID",
+            "DESCRIPTION",
+            "Unnamed: 2",
+            "Unnamed: 27"
+        ]
+    }
+}

@@ -1,0 +1,158 @@
+{
+    "creation_date_utc": "2026-07-08 12:36:00",
+    "registry_status": "CLEAN_AFTER_PHASE45_AUDIT",
+    "models": [
+        {
+            "model_id": "caml_phase3_champion",
+            "dataset": "CAML (Freshwater)",
+            "algorithm": "Weighted Random Forest (random_forest_weighted)",
+            "phase": 3,
+            "status": "DEPLOYMENT_CANDIDATE",
+            "target": "severity",
+            "target_mapping": null,
+            "feature_schema": [
+                "lat",
+                "lon",
+                "distance_to_water_m",
+                "Year",
+                "Month_sin",
+                "Month_cos",
+                "DayOfYear_sin",
+                "DayOfYear_cos",
+                "region",
+                "Season"
+            ],
+            "preprocessing": "ColumnTransformer (Imputation, scaling, one-hot encoding)",
+            "validation_metrics": {
+                "accuracy": 0.6323268206039077,
+                "f1_macro": 0.5243193745114039,
+                "dangerous_recall": 0.9480069324090121
+            },
+            "dangerous_class_definition": [4, 5],
+            "dangerous_recall": 0.9480069324090121,
+            "artifact_path": "models/deployment/caml_champion.joblib",
+            "audit_status": "VERIFIED_AFTER_PHASE45",
+            "created_at": "2026-07-08 00:41:15"
+        },
+        {
+            "model_id": "habsos_phase3_champion",
+            "dataset": "HABSOS (Marine)",
+            "algorithm": "Weighted Logistic Regression (logistic_regression_weighted)",
+            "phase": 3,
+            "status": "DEPLOYMENT_CANDIDATE",
+            "target": "CATEGORY",
+            "target_mapping": {
+                "not observed": "normal",
+                "very low": "normal",
+                "low": "warning",
+                "medium": "warning",
+                "high": "critical"
+            },
+            "feature_schema": [
+                "LATITUDE",
+                "LONGITUDE",
+                "STATE_ID",
+                "SAMPLE_DEPTH",
+                "SALINITY",
+                "WATER_TEMP",
+                "Season",
+                "Year",
+                "Month",
+                "Month_sin",
+                "Month_cos",
+                "DayOfYear_sin",
+                "DayOfYear_cos"
+            ],
+            "preprocessing": "Pipeline (Depth Imputation, Group Median Imputation, scaling, one-hot encoding)",
+            "validation_metrics": {
+                "accuracy": 0.6758408132367254,
+                "f1_macro": 0.34109057691753164,
+                "dangerous_recall": 0.48732394366197185
+            },
+            "dangerous_class_definition": [
+                "warning",
+                "critical"
+            ],
+            "dangerous_recall": 0.48732394366197185,
+            "artifact_path": "models/deployment/habsos_champion.joblib",
+            "audit_status": "VERIFIED_AFTER_PHASE45",
+            "created_at": "2026-07-08 00:41:15"
+        },
+        {
+            "model_id": "caml_phase4_invalid",
+            "dataset": "CAML (Freshwater)",
+            "algorithm": "ThresholdShiftClassifier (Calibrated Random Forest)",
+            "phase": 4,
+            "status": "INVALIDATED",
+            "target": "severity",
+            "target_mapping": null,
+            "feature_schema": [
+                "lat",
+                "lon",
+                "distance_to_water_m",
+                "Year",
+                "Month_sin",
+                "Month_cos",
+                "DayOfYear_sin",
+                "DayOfYear_cos",
+                "region",
+                "Season"
+            ],
+            "preprocessing": "ColumnTransformer (Imputation, scaling, one-hot encoding) + Platt Scaling",
+            "validation_metrics": {
+                "accuracy": 0.677619893428064,
+                "f1_macro": 0.5059951165302111,
+                "dangerous_recall": 0.9358752166377816
+            },
+            "dangerous_class_definition": [4, 5],
+            "dangerous_recall": 0.9358752166377816,
+            "artifact_path": "models/archive/phase4_invalid/caml_final_model.joblib",
+            "audit_status": "FAILED_PHASE45_INTEGRITY_AUDIT",
+            "created_at": "2026-07-08 00:42:18"
+        },
+        {
+            "model_id": "habsos_phase4_invalid",
+            "dataset": "HABSOS (Marine)",
+            "algorithm": "ThresholdShiftClassifier (Calibrated Random Forest)",
+            "phase": 4,
+            "status": "INVALIDATED",
+            "target": "CATEGORY",
+            "target_mapping": {
+                "not observed": "normal",
+                "very low": "normal",
+                "low": "warning",
+                "medium": "warning",
+                "high": "critical"
+            },
+            "feature_schema": [
+                "LATITUDE",
+                "LONGITUDE",
+                "STATE_ID",
+                "SAMPLE_DEPTH",
+                "SALINITY",
+                "WATER_TEMP",
+                "Season",
+                "Year",
+                "Month",
+                "Month_sin",
+                "Month_cos",
+                "DayOfYear_sin",
+                "DayOfYear_cos"
+            ],
+            "preprocessing": "Pipeline (Depth Imputation, Group Median Imputation, scaling, one-hot encoding) + Platt Scaling",
+            "validation_metrics": {
+                "accuracy": 0.8450308208067482,
+                "f1_macro": 0.33816780393806906,
+                "dangerous_recall": 0.07511737089201878
+            },
+            "dangerous_class_definition": [
+                "warning",
+                "critical"
+            ],
+            "dangerous_recall": 0.07511737089201878,
+            "artifact_path": "models/archive/phase4_invalid/habsos_final_model.joblib",
+            "audit_status": "FAILED_PHASE45_INTEGRITY_AUDIT",
+            "created_at": "2026-07-08 00:42:18"
+        }
+    ]
+}

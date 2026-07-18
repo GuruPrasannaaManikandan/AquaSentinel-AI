@@ -1,0 +1,28 @@
+{
+    "devices": {
+        "AQUA_FRESH_001": {
+            "device_id": "AQUA_FRESH_001",
+            "ecosystem_type": "Freshwater",
+            "dataset_route": "caml",
+            "location": {
+                "latitude": 27.5,
+                "longitude": -81.2
+            },
+            "enabled_sensors": ["gps", "rtc", "ph", "turbidity", "dissolved_oxygen"],
+            "firmware_version": "1.0.0",
+            "status": "ACTIVE"
+        },
+        "AQUA_MARINE_001": {
+            "device_id": "AQUA_MARINE_001",
+            "ecosystem_type": "Marine",
+            "dataset_route": "habsos",
+            "location": {
+                "latitude": 27.5,
+                "longitude": -82.5
+            },
+            "enabled_sensors": ["gps", "rtc", "temperature", "salinity", "ph", "turbidity", "dissolved_oxygen"],
+            "firmware_version": "1.0.0",
+            "status": "ACTIVE"
+        }
+    }
+}

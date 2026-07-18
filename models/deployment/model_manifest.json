@@ -1,0 +1,77 @@
+{
+    "manifest_version": "1.0.0",
+    "updated_at": "2026-07-08 12:36:00",
+    "models": {
+        "caml": {
+            "model_id": "caml_phase3_champion",
+            "version": "3.0.0",
+            "status": "DEPLOYMENT_CANDIDATE",
+            "dataset": "CAML (Freshwater)",
+            "algorithm": "Weighted Random Forest",
+            "artifact_path": "models/deployment/caml_champion.joblib",
+            "target": "severity",
+            "target_mapping": null,
+            "expected_features": [
+                "lat",
+                "lon",
+                "distance_to_water_m",
+                "Year",
+                "Month_sin",
+                "Month_cos",
+                "DayOfYear_sin",
+                "DayOfYear_cos",
+                "region",
+                "Season"
+            ],
+            "dangerous_classes": [
+                4,
+                5
+            ],
+            "validation_metrics": {
+                "accuracy": 0.6323268206039077,
+                "f1_macro": 0.5243193745114039,
+                "dangerous_recall": 0.9480069324090121
+            }
+        },
+        "habsos": {
+            "model_id": "habsos_phase3_champion",
+            "version": "3.0.0",
+            "status": "DEPLOYMENT_CANDIDATE",
+            "dataset": "HABSOS (Marine)",
+            "algorithm": "Weighted Logistic Regression",
+            "artifact_path": "models/deployment/habsos_champion.joblib",
+            "target": "CATEGORY",
+            "target_mapping": {
+                "not observed": "normal",
+                "very low": "normal",
+                "low": "warning",
+                "medium": "warning",
+                "high": "critical"
+            },
+            "expected_features": [
+                "LATITUDE",
+                "LONGITUDE",
+                "STATE_ID",
+                "SAMPLE_DEPTH",
+                "SALINITY",
+                "WATER_TEMP",
+                "Season",
+                "Year",
+                "Month",
+                "Month_sin",
+                "Month_cos",
+                "DayOfYear_sin",
+                "DayOfYear_cos"
+            ],
+            "dangerous_classes": [
+                "warning",
+                "critical"
+            ],
+            "validation_metrics": {
+                "accuracy": 0.6758408132367254,
+                "f1_macro": 0.34109057691753164,
+                "dangerous_recall": 0.48732394366197185
+            }
+        }
+    }
+}

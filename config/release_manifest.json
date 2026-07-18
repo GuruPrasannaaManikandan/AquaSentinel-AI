@@ -1,0 +1,37 @@
+{
+    "project_name": "IoT-Based Artificial Immune System for Aquatic Ecosystems",
+    "release_version": "1.0.0",
+    "release_date": "2026-07-13",
+    "python_version": ">=3.9",
+    "dependencies": {
+        "fastapi": ">=0.95.0",
+        "streamlit": ">=1.22.0",
+        "websockets": ">=11.0",
+        "scikit-learn": ">=1.2.0",
+        "pydantic": ">=2.0.0"
+    },
+    "active_ml_models": {
+        "caml": "caml_phase3_champion",
+        "habsos": "habsos_phase3_champion"
+    },
+    "active_ais_models": {
+        "caml": "caml_nsa_v1",
+        "habsos": "habsos_nsa_v1"
+    },
+    "active_fusion_version": "1.0.0",
+    "device_registry_version": "1.0.0",
+    "telemetry_schema_version": "1.0.0",
+    "api_version": "1.0.0",
+    "dashboard_version": "1.0.0",
+    "mqtt_transport_mode": "IN_MEMORY_MQTT",
+    "database_schema_version": "v1",
+    "verified_metric_source": "reports/phase9/final_verified_metrics.json",
+    "test_count": 180,
+    "known_limitations": [
+        "Phase 4 optimizations fully invalidated and rolled back.",
+        "Phase 5 OOD anomaly experiment remains exploratory.",
+        "HABSOS AIS has 0% known validation anomaly recall on bloom risk datasets.",
+        "Sensors, ESP32 device, and actuators are simulated using software models.",
+        "CAML Freshwater ML and AIS models are contextual geographic/temporal risk models; live sensor validation is handled via edge-side ESP32 EdgeValidator diagnostics."
+    ]
+}

@@ -1,0 +1,37 @@
+{
+    "fusion_version": "1.0.0",
+    "supported_datasets": ["caml", "habsos"],
+    "confidence_thresholds": {
+        "caml": {
+            "low": 0.50,
+            "high": 0.80
+        },
+        "habsos": {
+            "low": 0.50,
+            "high": 0.70
+        }
+    },
+    "dangerous_classes": {
+        "caml": [4, 5],
+        "habsos": ["warning", "critical"]
+    },
+    "dataset_reliability": {
+        "caml": {
+            "ais_reliable": true
+        },
+        "habsos": {
+            "ais_reliable": false,
+            "exploratory_signaling_only": true
+        }
+    },
+    "reason_codes": [
+        "ML_NORMAL_AIS_NORMAL",
+        "ML_WARNING_AIS_NORMAL",
+        "ML_DANGEROUS",
+        "ML_NORMAL_AIS_ANOMALY",
+        "ML_WARNING_AIS_ANOMALY",
+        "ML_LOW_CONFIDENCE",
+        "HABSOS_AIS_LIMITED_RELIABILITY",
+        "INVALID_EVIDENCE"
+    ]
+}

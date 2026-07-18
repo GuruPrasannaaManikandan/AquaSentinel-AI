@@ -1,0 +1,218 @@
+2026-07-08 00:00:49 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:00:49 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:00:49 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:00:49 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:01:12 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:01:12 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:01:12 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:01:12 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:01:32 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:01:32 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:01:32 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:01:32 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:01:51 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:01:51 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:01:51 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:01:51 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:02:27 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:02:27 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:02:27 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:02:27 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:02:47 - run_phase3 - INFO - Ablation Results - GroupMedianImputer F1: 0.2070 vs GlobalMedian F1: 0.2077
+2026-07-08 00:02:47 - run_phase3 - INFO - 
+========================================
+RUNNING CAML EXPERIMENT SUITE
+========================================
+2026-07-08 00:02:47 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:02:47 - run_phase3 - INFO - Training model: logistic_regression_weighted
+2026-07-08 00:03:39 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:03:39 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:03:39 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:03:39 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:03:59 - run_phase3 - INFO - Ablation Results - GroupMedianImputer F1: 0.2070 vs GlobalMedian F1: 0.2077
+2026-07-08 00:03:59 - run_phase3 - INFO - 
+========================================
+RUNNING CAML EXPERIMENT SUITE
+========================================
+2026-07-08 00:03:59 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:04:00 - run_phase3 - INFO - Training model: logistic_regression_weighted
+2026-07-08 00:04:00 - run_phase3 - INFO - Training model: decision_tree
+2026-07-08 00:04:01 - run_phase3 - INFO - Training model: decision_tree_weighted
+2026-07-08 00:04:01 - run_phase3 - INFO - Training model: random_forest
+2026-07-08 00:04:02 - run_phase3 - INFO - Training model: random_forest_weighted
+2026-07-08 00:04:02 - run_phase3 - INFO - Training model: hist_gradient_boosting_weighted
+2026-07-08 00:04:07 - run_phase3 - INFO - 
+Experiment Results for CAML:
+                             Model  Accuracy  Macro F1  Dangerous Recall
+0                            dummy  0.279307  0.189078          0.227036
+1     logistic_regression_weighted  0.506217  0.408097          0.970537
+2                    decision_tree  0.663410  0.460922          0.930676
+3           decision_tree_weighted  0.565719  0.427956          0.925477
+4                    random_forest  0.680284  0.465745          0.932409
+5           random_forest_weighted  0.632327  0.524319          0.948007
+6  hist_gradient_boosting_weighted  0.611012  0.486933          0.953206
+2026-07-08 00:04:07 - run_phase3 - INFO - Best Model selected for caml: random_forest_weighted
+2026-07-08 00:04:08 - run_phase3 - INFO - 
+========================================
+RUNNING HABSOS EXPERIMENT SUITE
+========================================
+2026-07-08 00:04:08 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:04:24 - run_phase3 - INFO - Training model: logistic_regression_weighted
+2026-07-08 00:04:44 - run_phase3 - INFO - Training model: decision_tree
+2026-07-08 00:05:01 - run_phase3 - INFO - Training model: decision_tree_weighted
+2026-07-08 00:05:21 - run_phase3 - INFO - Training model: random_forest
+2026-07-08 00:05:52 - run_phase3 - INFO - Training model: random_forest_weighted
+2026-07-08 00:06:12 - run_phase3 - INFO - Training model: hist_gradient_boosting_weighted
+2026-07-08 00:06:34 - run_phase3 - INFO - 
+Experiment Results for HABSOS:
+                             Model  Accuracy  Macro F1  Dangerous Recall
+0                            dummy  0.644101  0.204039          0.089526
+1     logistic_regression_weighted  0.582135  0.209349          0.414503
+2                    decision_tree  0.807559  0.180791          0.000000
+3           decision_tree_weighted  0.724343  0.207355          0.028648
+4                    random_forest  0.809938  0.178998          0.000000
+5           random_forest_weighted  0.780523  0.188714          0.000000
+6  hist_gradient_boosting_weighted  0.762734  0.202731          0.022381
+2026-07-08 00:06:34 - run_phase3 - INFO - Best Model selected for habsos: logistic_regression_weighted
+2026-07-08 00:06:34 - run_phase3 - INFO - Writing dangerous false negative report to reports\phase3\dangerous_false_negative_analysis.md
+2026-07-08 00:06:34 - run_phase3 - INFO - Writing feature importance report to reports\phase3\feature_importance_analysis.md
+2026-07-08 00:06:34 - run_phase3 - INFO - Writing error analysis report to reports\phase3\error_analysis.md
+2026-07-08 00:33:18 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:33:18 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:33:18 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:33:18 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:33:39 - run_phase3 - INFO - Ablation Results - GroupMedianImputer F1: 0.3267 vs GlobalMedian F1: 0.3301
+2026-07-08 00:33:39 - run_phase3 - INFO - 
+========================================
+RUNNING CAML EXPERIMENT SUITE
+========================================
+2026-07-08 00:33:39 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:33:39 - run_phase3 - INFO - Training model: logistic_regression_weighted
+2026-07-08 00:33:40 - run_phase3 - INFO - Training model: decision_tree
+2026-07-08 00:33:40 - run_phase3 - INFO - Training model: decision_tree_weighted
+2026-07-08 00:33:41 - run_phase3 - INFO - Training model: random_forest
+2026-07-08 00:33:42 - run_phase3 - INFO - Training model: random_forest_weighted
+2026-07-08 00:33:42 - run_phase3 - INFO - Training model: hist_gradient_boosting_weighted
+2026-07-08 00:33:48 - run_phase3 - INFO - 
+Experiment Results for CAML:
+                             Model  Accuracy  Macro F1  Dangerous Recall
+0                            dummy  0.279307  0.189078          0.227036
+1     logistic_regression_weighted  0.506217  0.408097          0.970537
+2                    decision_tree  0.663410  0.460922          0.930676
+3           decision_tree_weighted  0.565719  0.427956          0.925477
+4                    random_forest  0.680284  0.465745          0.932409
+5           random_forest_weighted  0.632327  0.524319          0.948007
+6  hist_gradient_boosting_weighted  0.611012  0.486933          0.953206
+2026-07-08 00:33:48 - run_phase3 - INFO - Best Model selected for caml: random_forest_weighted
+2026-07-08 00:33:48 - run_phase3 - INFO - 
+========================================
+RUNNING HABSOS EXPERIMENT SUITE
+========================================
+2026-07-08 00:33:48 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:34:55 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:34:55 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:34:55 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:34:55 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:35:14 - run_phase3 - INFO - Ablation Results - GroupMedianImputer F1: 0.3267 vs GlobalMedian F1: 0.3301
+2026-07-08 00:35:14 - run_phase3 - INFO - 
+========================================
+RUNNING CAML EXPERIMENT SUITE
+========================================
+2026-07-08 00:35:14 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:35:15 - run_phase3 - INFO - Training model: logistic_regression_weighted
+2026-07-08 00:35:15 - run_phase3 - INFO - Training model: decision_tree
+2026-07-08 00:35:16 - run_phase3 - INFO - Training model: decision_tree_weighted
+2026-07-08 00:35:17 - run_phase3 - INFO - Training model: random_forest
+2026-07-08 00:35:17 - run_phase3 - INFO - Training model: random_forest_weighted
+2026-07-08 00:35:18 - run_phase3 - INFO - Training model: hist_gradient_boosting_weighted
+2026-07-08 00:35:23 - run_phase3 - INFO - 
+Experiment Results for CAML:
+                             Model  Accuracy  Macro F1  Dangerous Recall
+0                            dummy  0.279307  0.189078          0.227036
+1     logistic_regression_weighted  0.506217  0.408097          0.970537
+2                    decision_tree  0.663410  0.460922          0.930676
+3           decision_tree_weighted  0.565719  0.427956          0.925477
+4                    random_forest  0.680284  0.465745          0.932409
+5           random_forest_weighted  0.632327  0.524319          0.948007
+6  hist_gradient_boosting_weighted  0.611012  0.486933          0.953206
+2026-07-08 00:35:23 - run_phase3 - INFO - Best Model selected for caml: random_forest_weighted
+2026-07-08 00:35:23 - run_phase3 - INFO - 
+========================================
+RUNNING HABSOS EXPERIMENT SUITE
+========================================
+2026-07-08 00:35:24 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:35:43 - run_phase3 - INFO - Training model: logistic_regression_weighted
+2026-07-08 00:36:02 - run_phase3 - INFO - Training model: decision_tree
+2026-07-08 00:36:19 - run_phase3 - INFO - Training model: decision_tree_weighted
+2026-07-08 00:36:36 - run_phase3 - INFO - Training model: random_forest
+2026-07-08 00:36:56 - run_phase3 - INFO - Training model: random_forest_weighted
+2026-07-08 00:37:18 - run_phase3 - INFO - Training model: hist_gradient_boosting_weighted
+2026-07-08 00:37:39 - run_phase3 - INFO - 
+Experiment Results for HABSOS:
+                             Model  Accuracy  Macro F1  Dangerous Recall
+0                            dummy  0.777712  0.332104          0.120657
+1     logistic_regression_weighted  0.675841  0.341091          0.487324
+2                    decision_tree  0.878934  0.317235          0.008451
+3           decision_tree_weighted  0.823078  0.322628          0.057746
+4                    random_forest  0.884828  0.312965          0.000000
+5           random_forest_weighted  0.880015  0.313838          0.003756
+6  hist_gradient_boosting_weighted  0.875527  0.314764          0.004695
+2026-07-08 00:37:39 - run_phase3 - INFO - Best Model selected for habsos: logistic_regression_weighted
+2026-07-08 00:37:39 - run_phase3 - INFO - Writing dangerous false negative report to reports\phase3\dangerous_false_negative_analysis.md
+2026-07-08 00:37:39 - run_phase3 - INFO - Writing feature importance report to reports\phase3\feature_importance_analysis.md
+2026-07-08 00:37:39 - run_phase3 - INFO - Writing error analysis report to reports\phase3\error_analysis.md
+2026-07-08 00:38:09 - run_phase3 - INFO - Initializing Phase 3 Model Training Pipeline...
+2026-07-08 00:38:09 - run_phase3 - INFO - Verifying Phase 2 artifacts...
+2026-07-08 00:38:09 - run_phase3 - INFO - Artifact verification passed successfully!
+2026-07-08 00:38:09 - run_phase3 - INFO - Conducting Preprocessing Ablation Study on HABSOS dataset...
+2026-07-08 00:38:33 - run_phase3 - INFO - Ablation Results - GroupMedianImputer F1: 0.3267 vs GlobalMedian F1: 0.3301
+2026-07-08 00:38:33 - run_phase3 - INFO - 
+========================================
+RUNNING CAML EXPERIMENT SUITE
+========================================
+2026-07-08 00:38:34 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:38:34 - run_phase3 - INFO - Training model: logistic_regression_weighted
+2026-07-08 00:38:35 - run_phase3 - INFO - Training model: decision_tree
+2026-07-08 00:38:36 - run_phase3 - INFO - Training model: decision_tree_weighted
+2026-07-08 00:38:36 - run_phase3 - INFO - Training model: random_forest
+2026-07-08 00:38:37 - run_phase3 - INFO - Training model: random_forest_weighted
+2026-07-08 00:38:38 - run_phase3 - INFO - Training model: hist_gradient_boosting_weighted
+2026-07-08 00:38:44 - run_phase3 - INFO - 
+Experiment Results for CAML:
+                             Model  Accuracy  Macro F1  Dangerous Recall
+0                            dummy  0.279307  0.189078          0.227036
+1     logistic_regression_weighted  0.506217  0.408097          0.970537
+2                    decision_tree  0.663410  0.460922          0.930676
+3           decision_tree_weighted  0.565719  0.427956          0.925477
+4                    random_forest  0.680284  0.465745          0.932409
+5           random_forest_weighted  0.632327  0.524319          0.948007
+6  hist_gradient_boosting_weighted  0.611012  0.486933          0.953206
+2026-07-08 00:38:44 - run_phase3 - INFO - Best Model selected for caml: random_forest_weighted
+2026-07-08 00:38:44 - run_phase3 - INFO - 
+========================================
+RUNNING HABSOS EXPERIMENT SUITE
+========================================
+2026-07-08 00:38:45 - run_phase3 - INFO - Training model: dummy
+2026-07-08 00:39:06 - run_phase3 - INFO - Training model: logistic_regression_weighted
+2026-07-08 00:39:26 - run_phase3 - INFO - Training model: decision_tree
+2026-07-08 00:39:47 - run_phase3 - INFO - Training model: decision_tree_weighted
+2026-07-08 00:40:08 - run_phase3 - INFO - Training model: random_forest
+2026-07-08 00:40:27 - run_phase3 - INFO - Training model: random_forest_weighted
+2026-07-08 00:40:51 - run_phase3 - INFO - Training model: hist_gradient_boosting_weighted
+2026-07-08 00:41:14 - run_phase3 - INFO - 
+Experiment Results for HABSOS:
+                             Model  Accuracy  Macro F1  Dangerous Recall
+0                            dummy  0.777712  0.332104          0.120657
+1     logistic_regression_weighted  0.675841  0.341091          0.487324
+2                    decision_tree  0.878934  0.317235          0.008451
+3           decision_tree_weighted  0.823078  0.322628          0.057746
+4                    random_forest  0.884828  0.312965          0.000000
+5           random_forest_weighted  0.880015  0.313838          0.003756
+6  hist_gradient_boosting_weighted  0.875527  0.314764          0.004695
+2026-07-08 00:41:14 - run_phase3 - INFO - Best Model selected for habsos: logistic_regression_weighted
+2026-07-08 00:41:14 - run_phase3 - INFO - Writing dangerous false negative report to reports\phase3\dangerous_false_negative_analysis.md
+2026-07-08 00:41:14 - run_phase3 - INFO - Writing feature importance report to reports\phase3\feature_importance_analysis.md
+2026-07-08 00:41:14 - run_phase3 - INFO - Writing error analysis report to reports\phase3\error_analysis.md
+2026-07-08 00:41:15 - run_phase3 - INFO - Saving model registry to models\model_registry.json
+2026-07-08 00:41:15 - run_phase3 - INFO - Writing Phase 3 summary report to reports\phase3\phase3_summary.md
+2026-07-08 00:41:15 - run_phase3 - INFO - Phase 3 Pipeline successfully completed!
