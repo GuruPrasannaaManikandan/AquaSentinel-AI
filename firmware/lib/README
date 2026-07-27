@@ -1,0 +1,7 @@
+This directory is intended for private libraries.
+Each library should be placed in a separate subdirectory.
+For example:
+|-- lib
+|   |-- CustomDriver
+|   |   |-- CustomDriver.cpp
+|   |   |-- CustomDriver.h

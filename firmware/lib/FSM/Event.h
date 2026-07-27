@@ -1,0 +1,42 @@
+#ifndef EVENT_H
+#define EVENT_H
+
+/**
+ * @brief Enum class specifying strongly typed state machine events.
+ */
+enum class Event {
+    BOOT_COMPLETE,
+    SELF_TEST_PASS,
+    SELF_TEST_FAIL,
+    SENSORS_READY,
+    SENSOR_FAULT,
+    WARNING_DETECTED,
+    ALERT_DETECTED,
+    FAULT_DETECTED,
+    RECOVERY_SUCCESS,
+    RECOVERY_FAILED,
+    SHUTDOWN_REQUEST,
+    TIMEOUT,
+    UNKNOWN_EVENT,
+
+    // Wi-Fi Connectivity Events
+    WIFI_CONNECT_REQUEST,
+    WIFI_CONNECTED,
+    WIFI_DISCONNECTED,
+    WIFI_CONNECTION_FAILED,
+    WIFI_RECONNECTING,
+    WIFI_SIGNAL_WEAK,
+    WIFI_TIMEOUT,
+
+    // MQTT Communication Events
+    MQTT_CONNECT_REQUEST,
+    MQTT_CONNECTED,
+    MQTT_DISCONNECTED,
+    MQTT_PUBLISH_SUCCESS,
+    MQTT_PUBLISH_FAILED,
+    MQTT_MESSAGE_RECEIVED,
+    MQTT_SUBSCRIBED,
+    MQTT_TIMEOUT
+};
+
+#endif
