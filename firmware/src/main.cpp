@@ -22,6 +22,9 @@
 #include "MQTTManager.h"
 #include "IMQTTObserver.h"
 #include "IMQTTConnectionObserver.h"
+#include "BackendGateway.h"
+#include "DiagnosticsManager.h"
+#include "VerificationManager.h"
 
 // Specifications
 #define PROJECT_NAME "AquaSentinel-AI"
@@ -88,6 +91,12 @@ MQTTTopicPolicy mqttPolicy(TopicPermission::READ_WRITE, 1, true, 128);
 MQTTQoSPolicy mqttQoSPolicy(0, 2000, 3);
 MockMQTTService mockMQTT;
 MQTTManager mqttManager(&mockMQTT, &dispatcher, &wifiManager, mqttConfig, mqttTopics, mqttPolicy, mqttQoSPolicy);
+
+// Instantiate Backend Integration Gateway
+BackendGateway backendGateway(&mqttManager, &dispatcher, "AQUA_FRESH_001", "caml");
+
+// Instantiate Diagnostics Manager
+DiagnosticsManager diagnosticsManager(&scheduler, &fsm, &wifiManager, &mqttManager, &backendGateway, &dispatcher);
 
 // -----------------------------------------------------------------
 // OBSERVERS IMPLEMENTATION
@@ -156,6 +165,7 @@ MQTTConnectionLogger mqttConnLogger;
 
 void sensorPollingTask(TaskContext& context) {
     TelemetryData telemetry = hal.readAllSensors();
+    diagnosticsManager.feedSensorRead();
     Serial.print("[TASK] Sensor Polling (Calibrated): ");
     Serial.print("Temp: "); Serial.print(telemetry.temperature_c); Serial.print(" C | ");
     Serial.print("pH: "); Serial.print(telemetry.ph); Serial.print(" | ");
@@ -163,9 +173,9 @@ void sensorPollingTask(TaskContext& context) {
     Serial.print("Turbidity: "); Serial.print(telemetry.turbidity_ntu); Serial.print(" NTU | ");
     Serial.print("DO: "); Serial.print(telemetry.dissolved_oxygen_mg_l); Serial.println(" mg/L");
 
-    // Queue telemetry payload publishing to MQTT broker (utilizes Serializer snprintf logic)
+    // Queue telemetry payload publishing to MQTT broker via BackendGateway
     if (mqttManager.isConnected()) {
-        mqttManager.publishTelemetry(telemetry);
+        backendGateway.publishTelemetry(telemetry);
     }
 }
 
@@ -196,17 +206,31 @@ void buzzerUpdateTask(TaskContext& context) {
 
 void fsmUpdateTask(TaskContext& context) {
     fsm.update();
+    backendGateway.setFSMState(static_cast<int>(fsm.getCurrentState()));
 }
 
 void wifiUpdateTask(TaskContext& context) {
     wifiManager.update();
+    backendGateway.setWiFiConnected(wifiManager.isConnected());
 }
 
 void mqttUpdateTask(TaskContext& context) {
     mqttManager.update();
+    if (mqttManager.isConnected()) {
+        diagnosticsManager.feedCommunication();
+    }
+}
+
+void backendUpdateTask(TaskContext& context) {
+    backendGateway.update();
+}
+
+void diagnosticsUpdateTask(TaskContext& context) {
+    diagnosticsManager.update();
 }
 
 void heartbeatTask(TaskContext& context) {
+    diagnosticsManager.feedHeartbeat();
     Serial.print("[TASK] Heartbeat. System Uptime: ");
     Serial.print(context.currentTime / 1000);
     Serial.println(" seconds");
@@ -324,6 +348,14 @@ void setup() {
     mqttManager.getConnectionObserverManager().subscribe(&mqttConnLogger);
     mqttManager.initialize();
 
+    // Initialize Backend Gateway
+    backendGateway.initialize();
+    backendGateway.setWiFiConnected(wifiManager.isConnected());
+    backendGateway.setFSMState(static_cast<int>(fsm.getCurrentState()));
+
+    // Initialize Diagnostics Manager
+    diagnosticsManager.initialize();
+
     // Default Indicator States
     hal.writeActuator("green_led", "ON");
     hal.writeActuator("yellow_led", "OFF");
@@ -349,8 +381,18 @@ void setup() {
     // Register MQTT Update Task
     scheduler.registerTask(new Task(TaskId::MQTT_UPDATE, "MQTT Update", 1000, mqttUpdateTask, TaskPriority::NORMAL));
 
+    // Register Backend Update Task
+    scheduler.registerTask(new Task(TaskId::BACKEND_UPDATE, "Backend Update", 1000, backendUpdateTask, TaskPriority::NORMAL));
+
+    // Register Diagnostics Update Task
+    scheduler.registerTask(new Task(TaskId::DIAGNOSTICS_UPDATE, "Diagnostics Update", 5000, diagnosticsUpdateTask, TaskPriority::NORMAL));
+
     Serial.println("Starting Cooperative Task Scheduler...");
     Serial.println("--------------------------------");
+
+    // Execute End-to-End System Verification Suite on startup
+    VerificationManager verificationMgr(&hal, &wifiManager, &scheduler, &fsm, &backendGateway);
+    verificationMgr.runVerificationSuite();
 }
 
 void loop() {

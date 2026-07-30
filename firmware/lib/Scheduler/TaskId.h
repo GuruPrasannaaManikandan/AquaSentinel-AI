@@ -13,7 +13,9 @@ enum class TaskId {
     HEARTBEAT,
     FSM_UPDATE,
     WIFI_UPDATE,
-    MQTT_UPDATE
+    MQTT_UPDATE,
+    BACKEND_UPDATE,
+    DIAGNOSTICS_UPDATE
 };
 
 #endif

@@ -11,7 +11,11 @@ enum class TaskId {
     LED_UPDATE,
     BUZZER_UPDATE,
     HEARTBEAT,
-    FSM_UPDATE
+    FSM_UPDATE,
+    WIFI_UPDATE,
+    MQTT_UPDATE,
+    BACKEND_UPDATE,
+    DIAGNOSTICS_UPDATE
 };
 
 #endif
