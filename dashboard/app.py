@@ -121,7 +121,18 @@ if st.sidebar.button("⚡ Trigger Single-Step Cycle"):
 
 # Active scenario configurations
 scenario_opts = ["NORMAL", "KNOWN_BLOOM_RISK", "UNUSUAL_ENVIRONMENTAL_CONDITION", "SENSOR_FAULT", "GRADUAL_ENVIRONMENTAL_DEGRADATION", "SUDDEN_EVENT"]
-active_scen = st.sidebar.selectbox("Set Environmental Scenario", scenario_opts)
+
+# Query active scenarios from the backend to initialize default selectbox index
+active_scenarios = fetch_json("/simulation/scenarios") or {"AQUA_FRESH_001": "NORMAL", "AQUA_MARINE_001": "NORMAL"}
+current_scen = active_scenarios.get(selected_id, "NORMAL")
+
+try:
+    default_idx = scenario_opts.index(current_scen)
+except ValueError:
+    default_idx = 0
+
+active_scen = st.sidebar.selectbox("Set Environmental Scenario", scenario_opts, index=default_idx)
+
 if st.sidebar.button("💾 Apply Scenario Selection"):
     fetch_json("/simulation/scenario", "POST", {"device_id": selected_id, "scenario": active_scen})
     st.rerun()

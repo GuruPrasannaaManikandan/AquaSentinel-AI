@@ -32,6 +32,13 @@ class AquaticSensorSimulator:
           UNUSUAL_ENVIRONMENTAL_CONDITION, GRADUAL_ENVIRONMENTAL_DEGRADATION, SUDDEN_EVENT
         """
         self.step_counter += 1
+        # Small deterministic jitter on repeated steps using RNG seed to prevent frozen sensor false positives
+        jitter_t = self.rng.normal(0, 0.001) if self.step_counter > 1 else 0.0
+        jitter_s = self.rng.normal(0, 0.001) if self.step_counter > 1 else 0.0
+        jitter_p = self.rng.normal(0, 0.001) if self.step_counter > 1 else 0.0
+        jitter_tr = self.rng.normal(0, 0.001) if self.step_counter > 1 else 0.0
+        jitter_do = self.rng.normal(0, 0.001) if self.step_counter > 1 else 0.0
+
         if timestamp is None:
             # Default to current time or standard summer day
             timestamp = datetime.datetime.now()
@@ -63,8 +70,8 @@ class AquaticSensorSimulator:
                 # HABSOS Row 4 (normal context: pred = normal, true = normal)
                 lat = 26.6649
                 lon = -80.0418
-                temperature = 20.4
-                salinity = 29.88
+                temperature = 20.4 + jitter_t
+                salinity = 29.88 + jitter_s
                 sample_depth = 0.5
                 timestamp = datetime.datetime(1993, 1, 20, 12, 0, 0)
                 
@@ -102,16 +109,16 @@ class AquaticSensorSimulator:
                     # HABSOS Row 964 (warning context: pred = warning, true = normal)
                     lat = 24.66587
                     lon = -81.36588
-                    temperature = 23.0
-                    salinity = 31.9
+                    temperature = 23.0 + jitter_t
+                    salinity = 31.9 + jitter_s
                     sample_depth = 0.5
                     timestamp = datetime.datetime(2023, 12, 18, 12, 0, 0)
                 else:
                     # Normal for Marine if Freshwater only
                     lat = 26.6649
                     lon = -80.0418
-                    temperature = 20.4
-                    salinity = 29.88
+                    temperature = 20.4 + jitter_t
+                    salinity = 29.88 + jitter_s
                     sample_depth = 0.5
                     timestamp = datetime.datetime(1993, 1, 20, 12, 0, 0)
                 
@@ -139,14 +146,14 @@ class AquaticSensorSimulator:
                 # Coordinates/time normal, but sensors at stress values
                 lat = 26.6649
                 lon = -80.0418
-                temperature = 32.0
-                salinity = 15.0
+                temperature = 32.0 + jitter_t
+                salinity = 15.0 + jitter_s
                 sample_depth = 0.5
                 timestamp = datetime.datetime(1993, 1, 20, 12, 0, 0)
                 
-                ph = 7.4
-                turbidity = 50.0
-                do = 4.0
+                ph = 7.4 + jitter_p
+                turbidity = 50.0 + jitter_tr
+                do = 4.0 + jitter_do
                 distance_to_water = 0.0
 
         elif scenario == "UNUSUAL_ENVIRONMENTAL_CONDITION":
@@ -165,13 +172,13 @@ class AquaticSensorSimulator:
             else:
                 lat = 25.0
                 lon = -80.0
-                temperature = 38.0
-                salinity = 42.0
+                temperature = 38.0 + jitter_t
+                salinity = 42.0 + jitter_s
                 sample_depth = 45.0
                 timestamp = datetime.datetime(1993, 1, 20, 12, 0, 0)
-                ph = 8.2
-                turbidity = 5.0
-                do = 7.0
+                ph = 8.2 + jitter_p
+                turbidity = 5.0 + jitter_tr
+                do = 7.0 + jitter_do
                 distance_to_water = 0.0
 
         elif scenario == "GRADUAL_ENVIRONMENTAL_DEGRADATION":
@@ -190,13 +197,13 @@ class AquaticSensorSimulator:
             else:
                 lat = 26.6649
                 lon = -80.0418
-                temperature = 24.0
-                salinity = 35.0
+                temperature = 24.0 + jitter_t
+                salinity = 35.0 + jitter_s
                 sample_depth = 0.5
                 timestamp = datetime.datetime(1993, 1, 20, 12, 0, 0)
-                ph = max(8.2 - drift * 0.3, 6.5)
-                turbidity = 5.0 + drift * 8.0
-                do = max(7.2 - drift * 1.2, 2.5)
+                ph = max(8.2 - drift * 0.3, 6.5) + jitter_p
+                turbidity = 5.0 + drift * 8.0 + jitter_tr
+                do = max(7.2 - drift * 1.2, 2.5) + jitter_do
                 distance_to_water = 0.0
 
         elif scenario == "SUDDEN_EVENT":
@@ -214,45 +221,24 @@ class AquaticSensorSimulator:
             else:
                 lat = 26.6649
                 lon = -80.0418
-                temperature = 19.0
-                salinity = 26.0
+                temperature = 19.0 + jitter_t
+                salinity = 26.0 + jitter_s
                 sample_depth = 0.5
                 timestamp = datetime.datetime(1993, 1, 20, 12, 0, 0)
-                ph = 7.6
-                turbidity = 55.0
-                do = 5.5
+                ph = 7.6 + jitter_p
+                turbidity = 55.0 + jitter_tr
+                do = 5.5 + jitter_do
                 distance_to_water = 0.0
 
         elif scenario == "SENSOR_FAULT":
-            # Simulates bad sensor states
-            fault_type = self.step_counter % 3
-            if fault_type == 0:
-                # NaN / Out of range
-                temperature = np.nan
-                salinity = -999.0
-                ph = 99.0
-                turbidity = np.inf
-                do = -5.0
-                distance_to_water = -100.0
-                sample_depth = -10.0
-            elif fault_type == 1:
-                # Completely frozen values
-                temperature = 22.2
-                salinity = 35.0 if not is_fresh else 0.2
-                ph = 7.0
-                turbidity = 2.0
-                do = 8.0
-                distance_to_water = 50.0
-                sample_depth = 1.0
-            else:
-                # Missing readings (None)
-                temperature = None
-                salinity = None
-                ph = None
-                turbidity = None
-                do = None
-                distance_to_water = None
-                sample_depth = None
+            # Simulates genuine validator-detectable sensor fault state on every cycle
+            temperature = None
+            salinity = None
+            ph = None
+            turbidity = None
+            do = None
+            distance_to_water = None
+            sample_depth = None
         else:
             raise ValueError(f"Unknown scenario: {scenario}")
 

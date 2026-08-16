@@ -361,14 +361,21 @@ def post_simulation_stop():
         "message": "Background simulation stopped." if stopped else "Simulation is already idle."
     }
 
+@app.get("/simulation/scenarios", tags=["Simulation"])
+def get_simulation_scenarios():
+    """Retrieves the active scenario configuration for all devices."""
+    return service.scenarios
+
 @app.post("/simulation/scenario", tags=["Simulation"])
 def post_simulation_scenario(body: SimulationControlSchema = Body(...)):
-    """Sets a device's simulated physical scenario state."""
+    """Sets a device's simulated physical scenario state and triggers an immediate cycle."""
     try:
         service.set_scenario(body.device_id, body.scenario)
+        results = service._execute_cycle_locked(force=True)
         return {
             "status": "SUCCESS",
-            "message": f"Scenario for {body.device_id} updated to {body.scenario}."
+            "message": f"Scenario for {body.device_id} updated to {body.scenario}.",
+            "results": results
         }
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

@@ -38,6 +38,7 @@ class BackendService:
         self.simulation_active = False
         self.simulation_thread = None
         self.simulation_shutdown_event = threading.Event()
+        self.cycle_lock = threading.Lock()
         self.scenarios = {
             "AQUA_FRESH_001": "NORMAL",
             "AQUA_MARINE_001": "NORMAL"
@@ -108,6 +109,21 @@ class BackendService:
 
             dev.client.set_on_message(make_dev_wrapped_cb(dev, original_dev_cb))
 
+    def _execute_cycle_locked(self, timestamp=None, force=True):
+        """Thread-safe helper to run a single cycle across all registered devices."""
+        with self.cycle_lock:
+            if not force and self.last_run_timestamp is not None:
+                elapsed = (datetime.datetime.now() - self.last_run_timestamp).total_seconds()
+                if elapsed < 1.95:
+                    return None
+
+            if not self.runtime.devices["AQUA_FRESH_001"].wifi_connected:
+                self.runtime.start()
+            if timestamp is None:
+                timestamp = datetime.datetime.now()
+            self.last_run_timestamp = timestamp
+            return self.runtime.execute_cycle(self.scenarios, timestamp)
+
     def register_decision_callback(self, callback):
         self.on_decision_callbacks.append(callback)
 
@@ -115,12 +131,10 @@ class BackendService:
         self.on_telemetry_callbacks.append(callback)
 
     def start_simulation(self):
-        """Starts background simulation runner."""
-        if self.simulation_thread and self.simulation_thread.is_alive():
+        """Starts background thread executing polling cycles periodically."""
+        if self.simulation_active:
             return False
-        
-        # Connect client lines
-        self.runtime.start()
+
         self.simulation_active = True
         self.simulation_shutdown_event.clear()
         self.simulation_thread = threading.Thread(target=self._run_simulation_loop, daemon=True)
@@ -128,14 +142,14 @@ class BackendService:
         return True
 
     def stop_simulation(self):
-        """Stops background simulation runner."""
+        """Signals background thread to terminate."""
         if not self.simulation_active:
             return False
-        
+
         self.simulation_active = False
         self.simulation_shutdown_event.set()
         if self.simulation_thread:
-            self.simulation_thread.join(timeout=2.0)
+            self.simulation_thread.join(timeout=1.0)
         self.runtime.stop()
         return True
 
@@ -144,20 +158,15 @@ class BackendService:
         if device_id not in self.scenarios:
             raise ValueError(f"Device ID {device_id} not registered.")
         self.scenarios[device_id] = scenario
+        if hasattr(self, "runtime") and self.runtime and device_id in self.runtime.devices:
+            self.runtime.devices[device_id].simulator.step_counter = 0
         return True
 
     def run_single_cycle(self):
         """Runs a single simulation cycle step synchronously."""
         if self.simulation_active:
             raise ValueError("Cannot trigger single-step cycle while background simulation is active.")
-            
-        # Check connection status
-        if not self.runtime.devices["AQUA_FRESH_001"].wifi_connected:
-            self.runtime.start()
-        
-        timestamp = datetime.datetime.now()
-        self.last_run_timestamp = timestamp
-        return self.runtime.execute_cycle(self.scenarios, timestamp)
+        return self._execute_cycle_locked(force=True)
 
     def send_device_command(self, device_id, command, payload=None):
         """Dispatches manual override commands to ESP32 device via gateway client."""
@@ -183,17 +192,19 @@ class BackendService:
         """Background thread target polling cycles repeatedly."""
         while self.simulation_active:
             try:
-                # Check connection status
-                if not self.runtime.devices["AQUA_FRESH_001"].wifi_connected:
-                    self.runtime.start()
-                # Direct execute_cycle to avoid raising active guard in run_single_cycle
-                timestamp = datetime.datetime.now()
-                self.last_run_timestamp = timestamp
-                self.runtime.execute_cycle(self.scenarios, timestamp)
+                # Dynamic check to space cycles by at least 2.0 seconds
+                if self.last_run_timestamp is not None:
+                    elapsed = (datetime.datetime.now() - self.last_run_timestamp).total_seconds()
+                    remaining = 2.0 - elapsed
+                    if remaining > 0:
+                        if self.simulation_shutdown_event.wait(timeout=remaining):
+                            break
+                        if not self.simulation_active:
+                            break
+
+                self._execute_cycle_locked(force=False)
             except Exception as e:
                 # Gateway crash logging
                 AlertSystem.trigger_gateway_error_alert("SYSTEM", str(e), self.event_store)
             
-            # Wait for 2.0 seconds or until shutdown event is set
-            if self.simulation_shutdown_event.wait(timeout=2.0):
                 break
