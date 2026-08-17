@@ -340,6 +340,8 @@ def post_device_command(
         return {"status": "SUCCESS", "message": f"Command {body.command} dispatched to {device_id}."}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except ConnectionError as e:
+        raise HTTPException(status_code=503, detail=f"Device {device_id} network is offline: {e}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
