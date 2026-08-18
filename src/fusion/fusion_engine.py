@@ -1,16 +1,24 @@
 import os
+import time
 import json
+import logging
+import datetime
 import numpy as np
+from dataclasses import is_dataclass, asdict
+from typing import Optional, Dict, Any, Union
+
+from src.cv.visual_detection import VisualEvidence
+from src.fusion.multimodal_fusion import FusedEvidence
 
 class FusionEngine:
     """
     Transparent, deterministic, testable evidence-fusion engine.
-    Combines supervised ML outputs and unsupervised AIS anomaly detection outputs
-    into a final system state (NORMAL, WARNING, CRITICAL, UNKNOWN_ANOMALY).
+    Combines supervised ML outputs, unsupervised AIS anomaly detection outputs,
+    and visual computer-vision evidence into a final system state
+    (NORMAL, WARNING, CRITICAL, UNKNOWN_ANOMALY).
     """
     def __init__(self, policy_path=None):
         if policy_path is None:
-            # Default path relative to project root
             base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             policy_path = os.path.join(base_dir, "config", "fusion_policy.json")
         self.policy_path = policy_path
@@ -29,7 +37,6 @@ class FusionEngine:
             if field not in ml_payload:
                 raise ValueError(f"ML payload missing required field: {field}")
         
-        # Check types
         if ml_payload["dataset"].lower() not in self.policy["supported_datasets"]:
             raise ValueError(f"Unsupported dataset: {ml_payload['dataset']}")
         if not isinstance(ml_payload["class_probabilities"], dict):
@@ -57,6 +64,25 @@ class FusionEngine:
         if not isinstance(ais_payload["nearest_detector_distance"], (int, float)):
             raise TypeError("nearest_detector_distance must be a float")
 
+    def validate_visual_payload(self, visual_payload: Union[VisualEvidence, Dict[str, Any]]) -> Dict[str, Any]:
+        """Validates and standardizes VisualEvidence payload into dictionary format."""
+        if visual_payload is None:
+            return None
+
+        if is_dataclass(visual_payload):
+            v_dict = asdict(visual_payload)
+        elif isinstance(visual_payload, dict):
+            v_dict = visual_payload.copy()
+        else:
+            raise TypeError("visual_evidence must be a VisualEvidence dataclass or dictionary")
+
+        required = ["visual_state", "confidence", "risk_level"]
+        for field in required:
+            if field not in v_dict:
+                raise ValueError(f"Visual payload missing required field: {field}")
+
+        return v_dict
+
     def get_confidence_band(self, dataset, confidence):
         """Categorizes ML confidence into LOW, MEDIUM, or HIGH bands based on policy."""
         thresholds = self.policy["confidence_thresholds"][dataset]
@@ -67,12 +93,20 @@ class FusionEngine:
         else:
             return "MEDIUM"
 
-    def fuse(self, ml_evidence, ais_evidence, sensors=None):
+    def fuse(
+        self,
+        ml_evidence: Dict[str, Any],
+        ais_evidence: Dict[str, Any],
+        sensors: Optional[Dict[str, Any]] = None,
+        visual_evidence: Optional[Union[VisualEvidence, Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
         """
-        Combines ML and AIS outputs, and optional raw sensor values,
-        into a final system state (NORMAL, WARNING, CRITICAL, UNKNOWN_ANOMALY).
+        Combines ML, AIS, and optional Visual computer vision evidence
+        into a final system decision (NORMAL, WARNING, CRITICAL, UNKNOWN_ANOMALY).
         """
-        # 1. Validation
+        start_time = time.perf_counter()
+
+        # 1. Validate Sensor Payloads
         self.validate_ml_payload(ml_evidence)
         self.validate_ais_payload(ais_evidence)
 
@@ -83,21 +117,60 @@ class FusionEngine:
             raise ValueError(f"Dataset identity mismatch: ML={dataset_ml}, AIS={dataset_ais}")
 
         dataset = dataset_ml
-
-        # 3. Categorize Confidence
         confidence = ml_evidence["confidence"]
         confidence_band = self.get_confidence_band(dataset, confidence)
 
-        # 4. Extract indicators
         is_dangerous_ml = ml_evidence["dangerous_class"]
         is_anomaly_ais = ais_evidence["is_anomaly"]
         predicted_class = ml_evidence["predicted_class"]
 
-        # Determine states by executing decision tables
-        final_state, reason_code, reasoning = self._fuse_original_table(confidence_band, is_dangerous_ml, is_anomaly_ais, predicted_class, dataset)
+        # Base Sensor Decision
+        sensor_state, sensor_reason_code, sensor_reasoning = self._fuse_original_table(
+            confidence_band, is_dangerous_ml, is_anomaly_ais, predicted_class, dataset
+        )
 
-        # Package the standard final payload
-        payload = {
+        # 3. Multimodal Visual Evidence Fusion Check
+        visual_dict = self.validate_visual_payload(visual_evidence) if visual_evidence is not None else None
+
+        if visual_dict is None:
+            # Sensor-only Mode (100% Backward Compatible)
+            duration_ms = (time.perf_counter() - start_time) * 1000.0
+            return {
+                "dataset": ml_evidence["dataset"],
+                "ml_evidence": {
+                    "predicted_class": ml_evidence["predicted_class"],
+                    "confidence": float(ml_evidence["confidence"]),
+                    "dangerous_class": ml_evidence["dangerous_class"],
+                    "model_id": ml_evidence["model_id"]
+                },
+                "ais_evidence": {
+                    "is_anomaly": bool(ais_evidence["is_anomaly"]),
+                    "anomaly_score": float(ais_evidence["anomaly_score"]),
+                    "matched_detector_count": int(ais_evidence["matched_detector_count"]),
+                    "nearest_detector_distance": float(ais_evidence["nearest_detector_distance"]),
+                    "ais_model_id": ais_evidence["ais_model_id"]
+                },
+                "fusion": {
+                    "final_state": sensor_state,
+                    "reason_code": sensor_reason_code,
+                    "reasoning": sensor_reasoning,
+                    "confidence_band": confidence_band,
+                    "multimodal": False
+                },
+                "system_metadata": {
+                    "fusion_version": self.policy["fusion_version"],
+                    "fusion_pipeline_time_ms": round(duration_ms, 3)
+                }
+            }
+
+        # Multimodal Fusion Execution
+        final_state, reason_code, reasoning = self._fuse_multimodal_table(
+            sensor_state, sensor_reason_code, sensor_reasoning, visual_dict
+        )
+
+        duration_ms = (time.perf_counter() - start_time) * 1000.0
+
+        return {
             "dataset": ml_evidence["dataset"],
             "ml_evidence": {
                 "predicted_class": ml_evidence["predicted_class"],
@@ -112,38 +185,37 @@ class FusionEngine:
                 "nearest_detector_distance": float(ais_evidence["nearest_detector_distance"]),
                 "ais_model_id": ais_evidence["ais_model_id"]
             },
+            "visual_evidence": visual_dict,
             "fusion": {
                 "final_state": final_state,
                 "reason_code": reason_code,
                 "reasoning": reasoning,
-                "confidence_band": confidence_band
+                "confidence_band": confidence_band,
+                "multimodal": True
             },
             "system_metadata": {
-                "fusion_version": self.policy["fusion_version"]
+                "fusion_version": self.policy["fusion_version"],
+                "fusion_pipeline_time_ms": round(duration_ms, 3)
             }
         }
-        return payload
 
     def _fuse_original_table(self, confidence_band, is_dangerous_ml, is_anomaly_ais, predicted_class, dataset):
+        """Standard V3 sensor decision logic."""
         final_state = "NORMAL"
         reason_code = "ML_NORMAL_AIS_NORMAL"
         reasoning = ""
 
         if confidence_band == "LOW":
-            # ML is uncertain, AIS is highly critical for OOD detection
             if is_anomaly_ais:
                 if is_dangerous_ml:
-                    # ML is uncertain but suspects a threat, and AIS signals OOD
                     final_state = "CRITICAL" if str(predicted_class).lower() == "critical" else "WARNING"
                     reason_code = "ML_LOW_CONFIDENCE"
                     reasoning = f"ML predicted a dangerous class ({predicted_class}) with LOW confidence, and AIS detected an anomaly. Elevated state to {final_state} for precautionary safety."
                 else:
-                    # ML is uncertain, and AIS confirms physical OOD telemetry
                     final_state = "UNKNOWN_ANOMALY"
                     reason_code = "ML_LOW_CONFIDENCE"
                     reasoning = "ML model output normal with LOW confidence, and AIS flagged a physical anomaly. Classified as UNKNOWN_ANOMALY due to OOD telemetry."
             else:
-                # No anomaly detected by AIS
                 if is_dangerous_ml:
                     final_state = "CRITICAL" if str(predicted_class).lower() == "critical" else "WARNING"
                     reason_code = "ML_LOW_CONFIDENCE"
@@ -152,11 +224,8 @@ class FusionEngine:
                     final_state = "NORMAL"
                     reason_code = "ML_LOW_CONFIDENCE"
                     reasoning = "ML model predicted normal with LOW confidence. Telemetry was in-distribution (AIS normal). System state set to NORMAL."
-
         else:
-            # ML confidence is MEDIUM or HIGH
             if is_dangerous_ml:
-                # Strong known threat
                 final_state = "CRITICAL" if str(predicted_class).lower() == "critical" else "WARNING"
                 reason_code = "ML_DANGEROUS"
                 if is_anomaly_ais:
@@ -164,13 +233,9 @@ class FusionEngine:
                 else:
                     reasoning = f"Supervised ML predicted dangerous class ({predicted_class}) with {confidence_band} confidence. Parallel AIS did not detect novelty (in-distribution)."
             else:
-                # ML predicts normal class
                 if is_anomaly_ais:
-                    # Contradiction: ML says NORMAL with confidence, AIS says ANOMALY
-                    # Lookup dynamic reliability from policy configuration
                     dataset_rel = self.policy.get("dataset_reliability", {}).get(dataset, {})
                     ais_reliable = dataset_rel.get("ais_reliable", False)
-                    
                     if ais_reliable:
                         final_state = "UNKNOWN_ANOMALY"
                         reason_code = "ML_NORMAL_AIS_ANOMALY"
@@ -180,9 +245,48 @@ class FusionEngine:
                         reason_code = "HABSOS_AIS_LIMITED_RELIABILITY"
                         reasoning = f"ML predicted normal with {confidence_band} confidence. {dataset.upper()} AIS flagged an anomaly, but its validation reliability is limited. Disregarded anomaly to prevent false alarm."
                 else:
-                    # Both agree normal
                     final_state = "NORMAL"
                     reason_code = "ML_NORMAL_AIS_NORMAL"
                     reasoning = f"Both supervised ML ({confidence_band} confidence) and parallel AIS confirm normal, in-distribution telemetry."
 
         return final_state, reason_code, reasoning
+
+    def _fuse_multimodal_table(self, sensor_state, sensor_reason_code, sensor_reasoning, visual_dict):
+        """Multimodal Dempster-Shafer belief fusion logic combining sensor decision with visual evidence."""
+        v_state = visual_dict.get("visual_state", "UNCERTAIN")
+        risk_level = visual_dict.get("risk_level", "NONE")
+
+        # Handle Camera Faults & Inference Failures
+        if v_state in ["CAMERA_FAULT", "INFERENCE_FAILURE"]:
+            return sensor_state, "VISUAL_CAMERA_FAULT", f"Camera hardware/inference fault ({v_state}). Maintained base sensor fusion decision: {sensor_state}."
+
+        # Case A: Sensor threat confirmed by visual bloom evidence
+        if sensor_state in ["WARNING", "CRITICAL"] and v_state == "BLOOM_EVIDENCE":
+            final_state = "CRITICAL"
+            reason_code = "MULTIMODAL_BLOOM_CONFIRMED"
+            reasoning = f"Multimodal confirmation: Sensor evidence ({sensor_state}) and camera visual evidence (BLOOM_EVIDENCE, risk={risk_level}) independently confirm bloom threat. Elevated system state to CRITICAL."
+            return final_state, reason_code, reasoning
+
+        # Case B: Sensor normal but visual camera detects strong bloom risk (Visual Early Warning)
+        if sensor_state == "NORMAL" and v_state == "BLOOM_EVIDENCE" and risk_level in ["HIGH", "CRITICAL"]:
+            final_state = "WARNING"
+            reason_code = "VISUAL_EARLY_WARNING"
+            reasoning = f"Visual Early Warning: Water chemistry sensors read normal, but camera detects strong visual algal bloom surface evidence (risk={risk_level}). System state elevated to WARNING."
+            return final_state, reason_code, reasoning
+
+        # Case C: Sensor ML low confidence / anomaly but camera disconfirms bloom (Visual Disconfirmed Normal)
+        if sensor_state in ["WARNING", "UNKNOWN_ANOMALY"] and sensor_reason_code == "ML_LOW_CONFIDENCE" and v_state == "NO_VISUAL_BLOOM":
+            final_state = "NORMAL"
+            reason_code = "VISUAL_DISCONFIRMED_NORMAL"
+            reasoning = "Visual Disconfirmation: Sensor ML had low confidence, but camera confirms clear visual water (NO_VISUAL_BLOOM). System state set to NORMAL."
+            return final_state, reason_code, reasoning
+
+        # Case D: Sediment Turbidity Discoloration
+        if v_state == "TURBID_DISCOLORATION":
+            final_state = sensor_state
+            reason_code = "VISUAL_TURBIDITY_MITIGATED"
+            reasoning = f"Camera identified sediment turbidity discoloration without photosynthetic green bloom scum. Preserved sensor decision ({sensor_state})."
+            return final_state, reason_code, reasoning
+
+        # Default fallback
+        return sensor_state, sensor_reason_code, f"{sensor_reasoning} (Visual evidence: {v_state}, risk={risk_level})."

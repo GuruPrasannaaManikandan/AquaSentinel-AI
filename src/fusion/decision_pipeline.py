@@ -1,25 +1,29 @@
 import os
 import pandas as pd
+from dataclasses import asdict
 from src.models.deployment_loader import DeploymentModelLoader
 from src.ais.ais_loader import AISLoader
 from src.fusion.fusion_engine import FusionEngine
+from src.fusion.decision_adapter import DecisionAdapter
 
 class DecisionPipeline:
     """
     Coordinates end-to-end telemetry evaluation:
-    Raw Observation -> ML Output + AIS Output -> Fusion Engine -> Final System Decision.
+    Raw Observation -> ML Output + AIS Output + Optional Visual Evidence -> Fusion Engine -> Decision Adapter -> Final System Decision.
     """
     def __init__(self, workspace_dir=None):
         self.ml_loader = DeploymentModelLoader(workspace_dir)
         self.ais_loader = AISLoader(workspace_dir)
         self.fusion_engine = FusionEngine()
+        self.decision_adapter = DecisionAdapter()
 
-    def run_pipeline(self, dataset_key, X, matching_radius=None, sensors=None):
+    def run_pipeline(self, dataset_key, X, matching_radius=None, sensors=None, visual_evidence=None):
         """
         Executes end-to-end decision pipeline for CAML or HABSOS.
         X: pandas DataFrame containing raw inputs.
         matching_radius: optional custom matching radius for AIS.
         sensors: optional dict or list of dicts of raw sensor readings.
+        visual_evidence: optional VisualEvidence object or dictionary for V4.5 multimodal fusion.
         """
         if not isinstance(X, pd.DataFrame):
             raise TypeError("Input X must be a pandas DataFrame.")
@@ -52,7 +56,12 @@ class DecisionPipeline:
                 "ais_model_id": ais_out["ais_version"]
             }
             # Execute Fusion
-            return self.fusion_engine.fuse(ml_evidence, ais_evidence, sensors=sensors)
+            fused_result = self.fusion_engine.fuse(ml_evidence, ais_evidence, sensors=sensors, visual_evidence=visual_evidence)
+            
+            # Execute V4.6 Decision Adapter Integration
+            sys_event = self.decision_adapter.adapt(fused_result)
+            fused_result["system_event"] = asdict(sys_event)
+            return fused_result
         else:
             # Outputs are lists of dicts
             results = []
@@ -74,5 +83,13 @@ class DecisionPipeline:
                     "ais_model_id": a_o["ais_version"]
                 }
                 row_sensors = sensors[idx] if isinstance(sensors, list) and idx < len(sensors) else None
-                results.append(self.fusion_engine.fuse(ml_evidence, ais_evidence, sensors=row_sensors))
+                v_ev = visual_evidence[idx] if isinstance(visual_evidence, list) and idx < len(visual_evidence) else visual_evidence
+                
+                # Execute Fusion
+                fused_result = self.fusion_engine.fuse(ml_evidence, ais_evidence, sensors=row_sensors, visual_evidence=v_ev)
+                
+                # Execute V4.6 Decision Adapter Integration
+                sys_event = self.decision_adapter.adapt(fused_result)
+                fused_result["system_event"] = asdict(sys_event)
+                results.append(fused_result)
             return results

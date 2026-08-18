@@ -1,0 +1,82 @@
+{
+  "model_name": "MobileNetV3-Small-AquaticBloom",
+  "model_version": "1.0.0",
+  "architecture": "mobilenet_v3_small",
+  "classes": [
+    "NORMAL_WATER",
+    "ALGAL_BLOOM",
+    "TURBID_DISCOLORATION"
+  ],
+  "class_to_idx": {
+    "NORMAL_WATER": 0,
+    "ALGAL_BLOOM": 1,
+    "TURBID_DISCOLORATION": 2
+  },
+  "input_contract": {
+    "width": 224,
+    "height": 224,
+    "channels": 3,
+    "color_space": "RGB",
+    "normalization": "STANDARD (ImageNet mean/std)",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "data_format": "NHWC or NCHW",
+    "dtype": "float32"
+  },
+  "metrics": {
+    "test_accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "per_class": {
+      "NORMAL_WATER": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 13.0
+      },
+      "ALGAL_BLOOM": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 25.0
+      },
+      "TURBID_DISCOLORATION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 29.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        13,
+        0,
+        0
+      ],
+      [
+        0,
+        25,
+        0
+      ],
+      [
+        0,
+        0,
+        29
+      ]
+    ]
+  },
+  "export": {
+    "pt_path": "models/cv/aquatic_bloom_mobilenetv3.pt",
+    "onnx_path": null,
+    "model_size_bytes": 6218731,
+    "model_size_mb": 5.93
+  }
+}

@@ -169,12 +169,21 @@ class TestPhase6(unittest.TestCase):
         self.assertEqual(res1["fusion"]["reason_code"], res2["fusion"]["reason_code"])
 
     def test_18_same_input_produces_same_output(self):
-        """Assert no hidden state exists; identical inputs yield identical outputs."""
+        """
+        Assert no hidden state exists; identical inputs yield identical deterministic functional outputs.
+        Note: Microsecond execution timing (fusion_pipeline_time_ms) is a host CPU performance measurement,
+        not a deterministic functional state property.
+        """
         ml = {"dataset": "caml", "predicted_class": 1, "class_probabilities": {1: 0.9}, "confidence": 0.9, "dangerous_class": False, "model_id": "M1"}
         ais = {"dataset": "caml", "is_anomaly": True, "anomaly_score": 0.3, "matched_detector_count": 2, "nearest_detector_distance": 0.42, "ais_model_id": "A1"}
         res1 = self.engine.fuse(ml, ais)
         res2 = self.engine.fuse(ml, ais)
-        self.assertEqual(res1, res2)
+
+        res1_clean = json.loads(json.dumps(res1))
+        res2_clean = json.loads(json.dumps(res2))
+        res1_clean.get("system_metadata", {}).pop("fusion_pipeline_time_ms", None)
+        res2_clean.get("system_metadata", {}).pop("fusion_pipeline_time_ms", None)
+        self.assertEqual(res1_clean, res2_clean)
 
     def test_19_final_payload_is_json_serializable(self):
         """Assert the final payload is completely JSON serializable."""

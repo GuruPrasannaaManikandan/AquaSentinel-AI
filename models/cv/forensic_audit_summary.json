@@ -1,0 +1,224 @@
+{
+  "group_leakage": {
+    "overlap_train_val_count": 0,
+    "overlap_train_test_count": 0,
+    "overlap_val_test_count": 0,
+    "has_group_leakage": false
+  },
+  "duplicate_hash_leakage": {
+    "duplicate_count_across_splits": 0,
+    "has_hash_leakage": false
+  },
+  "split_counts": {
+    "train": {
+      "NORMAL_WATER": 108,
+      "ALGAL_BLOOM": 100,
+      "TURBID_DISCOLORATION": 95
+    },
+    "val": {
+      "NORMAL_WATER": 25,
+      "ALGAL_BLOOM": 17,
+      "TURBID_DISCOLORATION": 26
+    },
+    "test": {
+      "NORMAL_WATER": 13,
+      "ALGAL_BLOOM": 25,
+      "TURBID_DISCOLORATION": 29
+    }
+  },
+  "test_performance": {
+    "test_accuracy": 1.0,
+    "confusion_matrix": [
+      [
+        13,
+        0,
+        0
+      ],
+      [
+        0,
+        25,
+        0
+      ],
+      [
+        0,
+        0,
+        29
+      ]
+    ]
+  },
+  "confidence_statistics": {
+    "overall": {
+      "mean": 0.9861,
+      "median": 0.998,
+      "min": 0.7664,
+      "max": 1.0
+    },
+    "per_class": {
+      "NORMAL_WATER": {
+        "mean": 0.9819,
+        "min": 0.9148,
+        "count": 13
+      },
+      "ALGAL_BLOOM": {
+        "mean": 0.9812,
+        "min": 0.7664,
+        "count": 25
+      },
+      "TURBID_DISCOLORATION": {
+        "mean": 0.9922,
+        "min": 0.9365,
+        "count": 29
+      }
+    }
+  },
+  "latency_statistics": {
+    "preprocessing_ms": {
+      "mean": 2.15,
+      "median": 2.127,
+      "p95": 2.389
+    },
+    "inference_ms": {
+      "mean": 15.533,
+      "median": 15.385,
+      "p95": 17.555
+    },
+    "total_pipeline_ms": {
+      "mean": 17.683,
+      "median": 17.5,
+      "p95": 19.585
+    }
+  },
+  "external_generalization": "External generalization dataset unavailable",
+  "test_predictions_sample": [
+    {
+      "image_id": "IMG_0005",
+      "observation_id": "OBS_0002",
+      "true_class": "ALGAL_BLOOM",
+      "predicted_class": "ALGAL_BLOOM",
+      "confidence": 0.8381,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.1576,
+        "ALGAL_BLOOM": 0.8381,
+        "TURBID_DISCOLORATION": 0.0043
+      }
+    },
+    {
+      "image_id": "IMG_0006",
+      "observation_id": "OBS_0002",
+      "true_class": "ALGAL_BLOOM",
+      "predicted_class": "ALGAL_BLOOM",
+      "confidence": 0.998,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.0018,
+        "ALGAL_BLOOM": 0.998,
+        "TURBID_DISCOLORATION": 0.0002
+      }
+    },
+    {
+      "image_id": "IMG_0007",
+      "observation_id": "OBS_0002",
+      "true_class": "ALGAL_BLOOM",
+      "predicted_class": "ALGAL_BLOOM",
+      "confidence": 1.0,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.0,
+        "ALGAL_BLOOM": 1.0,
+        "TURBID_DISCOLORATION": 0.0
+      }
+    },
+    {
+      "image_id": "IMG_0022",
+      "observation_id": "OBS_0007",
+      "true_class": "NORMAL_WATER",
+      "predicted_class": "NORMAL_WATER",
+      "confidence": 0.9997,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.9997,
+        "ALGAL_BLOOM": 0.0003,
+        "TURBID_DISCOLORATION": 0.0
+      }
+    },
+    {
+      "image_id": "IMG_0023",
+      "observation_id": "OBS_0007",
+      "true_class": "NORMAL_WATER",
+      "predicted_class": "NORMAL_WATER",
+      "confidence": 0.9995,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.9995,
+        "ALGAL_BLOOM": 0.0005,
+        "TURBID_DISCOLORATION": 0.0
+      }
+    },
+    {
+      "image_id": "IMG_0024",
+      "observation_id": "OBS_0008",
+      "true_class": "ALGAL_BLOOM",
+      "predicted_class": "ALGAL_BLOOM",
+      "confidence": 1.0,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.0,
+        "ALGAL_BLOOM": 1.0,
+        "TURBID_DISCOLORATION": 0.0
+      }
+    },
+    {
+      "image_id": "IMG_0025",
+      "observation_id": "OBS_0008",
+      "true_class": "ALGAL_BLOOM",
+      "predicted_class": "ALGAL_BLOOM",
+      "confidence": 1.0,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.0,
+        "ALGAL_BLOOM": 1.0,
+        "TURBID_DISCOLORATION": 0.0
+      }
+    },
+    {
+      "image_id": "IMG_0026",
+      "observation_id": "OBS_0008",
+      "true_class": "ALGAL_BLOOM",
+      "predicted_class": "ALGAL_BLOOM",
+      "confidence": 0.7664,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.1588,
+        "ALGAL_BLOOM": 0.7664,
+        "TURBID_DISCOLORATION": 0.0747
+      }
+    },
+    {
+      "image_id": "IMG_0027",
+      "observation_id": "OBS_0009",
+      "true_class": "TURBID_DISCOLORATION",
+      "predicted_class": "TURBID_DISCOLORATION",
+      "confidence": 0.9994,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.0,
+        "ALGAL_BLOOM": 0.0006,
+        "TURBID_DISCOLORATION": 0.9994
+      }
+    },
+    {
+      "image_id": "IMG_0028",
+      "observation_id": "OBS_0009",
+      "true_class": "TURBID_DISCOLORATION",
+      "predicted_class": "TURBID_DISCOLORATION",
+      "confidence": 0.9659,
+      "correct": true,
+      "probabilities": {
+        "NORMAL_WATER": 0.0032,
+        "ALGAL_BLOOM": 0.0309,
+        "TURBID_DISCOLORATION": 0.9659
+      }
+    }
+  ]
+}
