@@ -335,43 +335,72 @@ with tab2:
             st.session_state["camera_capturing"] = False
             st.session_state["camera_error"] = None
             st.session_state["trigger_capture"] = False
-            # Check backend for latest saved capture
+            st.session_state["camera_latest_image_bytes"] = None
+            st.session_state["camera_latest_frame_sequence"] = None
+            st.session_state["camera_latest_capture_id"] = None
+            st.session_state["camera_latest_capture_timestamp"] = None
+            st.session_state["camera_optical_intel"] = None
+
+            # Check backend for latest saved capture and decode its bytes
             try:
                 latest_cam = fetch_json("/api/camera/latest")
                 if latest_cam and latest_cam.get("success"):
-                    st.session_state["camera_capture_id"] = latest_cam.get("capture_id")
-                    st.session_state["camera_last_capture"] = latest_cam.get("captured_at")
-                    st.session_state["camera_frame_sequence"] = latest_cam.get("frame_sequence")
-                    st.session_state["camera_image_path"] = latest_cam.get("filepath")
+                    st.session_state["camera_latest_capture_id"] = latest_cam.get("capture_id")
+                    st.session_state["camera_latest_capture_timestamp"] = latest_cam.get("captured_at")
+                    st.session_state["camera_latest_frame_sequence"] = latest_cam.get("frame_sequence")
                     st.session_state["camera_optical_intel"] = latest_cam.get("optical_intelligence")
-                else:
-                    st.session_state["camera_capture_id"] = None
-                    st.session_state["camera_last_capture"] = None
-                    st.session_state["camera_frame_sequence"] = None
-                    st.session_state["camera_image_path"] = None
-                    st.session_state["camera_optical_intel"] = None
+                    
+                    latest_b64 = latest_cam.get("image_base64")
+                    if latest_b64:
+                        import base64
+                        import io
+                        from PIL import Image
+                        b_bytes = base64.b64decode(latest_b64)
+                        if len(b_bytes) > 100:
+                            test_img = Image.open(io.BytesIO(b_bytes))
+                            test_img.verify()
+                            st.session_state["camera_latest_image_bytes"] = b_bytes
             except Exception:
-                st.session_state["camera_capture_id"] = None
-                st.session_state["camera_last_capture"] = None
-                st.session_state["camera_frame_sequence"] = None
-                st.session_state["camera_image_path"] = None
-                st.session_state["camera_optical_intel"] = None
+                pass
 
         # Execute pending capture request triggered by button click
         if st.session_state.get("trigger_capture"):
             with st.spinner("Requesting fresh frame from physical ESP32-CAM (GC2145 on COM4)..."):
                 capture_res, status_code = capture_camera_photo(selected_id)
                 if status_code == 200 and capture_res.get("success"):
-                    st.session_state["camera_status"] = "SUCCESS"
-                    st.session_state["camera_capture_id"] = capture_res.get("capture_id")
-                    st.session_state["camera_last_capture"] = capture_res.get("captured_at")
-                    st.session_state["camera_frame_sequence"] = capture_res.get("frame_sequence")
-                    st.session_state["camera_image_path"] = capture_res.get("filepath")
-                    st.session_state["camera_optical_intel"] = capture_res.get("optical_intelligence")
-                    st.session_state["camera_error"] = None
+                    raw_b64 = capture_res.get("image_base64")
+                    if raw_b64:
+                        try:
+                            import base64
+                            import io
+                            from PIL import Image
+
+                            decoded_bytes = base64.b64decode(raw_b64)
+                            # Phase 9: Validate decoded image bytes
+                            if not decoded_bytes or len(decoded_bytes) < 100:
+                                raise ValueError("Decoded image bytes too small or empty")
+                            
+                            val_img = Image.open(io.BytesIO(decoded_bytes))
+                            val_img.verify()
+
+                            # Phase 5: Update session state atomically with fresh image bytes
+                            st.session_state["camera_latest_image_bytes"] = decoded_bytes
+                            st.session_state["camera_latest_frame_sequence"] = capture_res.get("frame_sequence")
+                            st.session_state["camera_latest_capture_id"] = capture_res.get("capture_id")
+                            st.session_state["camera_latest_capture_timestamp"] = capture_res.get("captured_at")
+                            st.session_state["camera_optical_intel"] = capture_res.get("optical_intelligence")
+                            st.session_state["camera_status"] = "SUCCESS"
+                            st.session_state["camera_error"] = None
+                        except Exception as val_err:
+                            st.session_state["camera_status"] = "ERROR"
+                            st.session_state["camera_error"] = f"Capture failed: received invalid image data ({val_err})"
+                    else:
+                        st.session_state["camera_status"] = "ERROR"
+                        st.session_state["camera_error"] = "Capture failed: API returned empty image payload"
                 else:
                     st.session_state["camera_status"] = "ERROR"
-                    st.session_state["camera_error"] = capture_res.get("error", f"Capture failed with status {status_code}")
+                    err_detail = capture_res.get("error") if isinstance(capture_res, dict) else f"HTTP {status_code}"
+                    st.session_state["camera_error"] = err_detail
 
                 st.session_state["trigger_capture"] = False
                 st.session_state["camera_capturing"] = False
@@ -379,34 +408,28 @@ with tab2:
 
         # Capture Status Alert Banners
         if st.session_state.get("camera_status") == "SUCCESS":
-            st.success(f"✓ Photo captured successfully at {st.session_state.get('camera_last_capture')} | Frame #{st.session_state.get('camera_frame_sequence')}")
+            st.success(f"✓ Photo captured successfully at {st.session_state.get('camera_latest_capture_timestamp')} | Frame #{st.session_state.get('camera_latest_frame_sequence')}")
         elif st.session_state.get("camera_status") == "ERROR":
             st.error(f"✗ Camera capture failed\n\n**Reason:** {st.session_state.get('camera_error')}")
 
         # Metadata Status Card
         card_col1, card_col2 = st.columns(2)
         card_col1.info(f"**Camera:** `READY` (ESP32-CAM)\n\n**Sensor:** `GC2145` (COM4)\n\n**Source:** `PHYSICAL ESP32-CAM`")
-        card_col2.info(f"**Status:** `{st.session_state.get('camera_status', 'READY')}`\n\n**Frame:** `#{st.session_state.get('camera_frame_sequence', 'N/A')}`\n\n**Last Capture:** `{st.session_state.get('camera_last_capture', 'None')}`")
+        card_col2.info(f"**Status:** `{st.session_state.get('camera_status', 'READY')}`\n\n**Frame:** `#{st.session_state.get('camera_latest_frame_sequence', 'N/A')}`\n\n**Last Capture:** `{st.session_state.get('camera_latest_capture_timestamp', 'None')}`")
 
-        # Display the captured physical photo
-        img_rel_path = st.session_state.get("camera_image_path")
-        full_img_path = os.path.join(BASE_DIR, img_rel_path) if img_rel_path else None
-        legacy_docs_img = os.path.join(BASE_DIR, "docs", "LIVE_ESP32_CAM_GC2145_FRAME.jpg")
+        # Phase 6 & 7: Display the fresh image bytes directly (No static file, immune to browser caching)
+        cur_img_bytes = st.session_state.get("camera_latest_image_bytes")
+        cur_seq = st.session_state.get("camera_latest_frame_sequence", "N/A")
+        cur_time = st.session_state.get("camera_latest_capture_timestamp", "None")
 
-        if full_img_path and os.path.exists(full_img_path):
+        if cur_img_bytes:
             st.image(
-                full_img_path,
-                caption=f"📷 Physical ESP32-CAM Photo (GC2145 on COM4 | Frame #{st.session_state.get('camera_frame_sequence')} | Captured: {st.session_state.get('camera_last_capture')})",
-                use_container_width=True
-            )
-        elif os.path.exists(legacy_docs_img):
-            st.image(
-                legacy_docs_img,
-                caption="📷 Physical ESP32-CAM Photo (GC2145 on COM4 | Ready)",
+                cur_img_bytes,
+                caption=f"📷 Physical ESP32-CAM Photo (GC2145 on COM4 | Frame #{cur_seq} | Captured: {cur_time})",
                 use_container_width=True
             )
         else:
-            st.warning("No camera photo captured yet. Click '📸 CAPTURE PHOTO' to acquire a fresh frame.")
+            st.info("No camera photo captured yet. Click '📸 CAPTURE PHOTO' to acquire a fresh frame.")
 
         # Manual Capture Button
         btn_label = "📸 Capturing..." if st.session_state.get("camera_capturing") else "📸 CAPTURE PHOTO"
