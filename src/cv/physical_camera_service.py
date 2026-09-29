@@ -158,6 +158,9 @@ class PhysicalCameraService:
 
                     if capturing:
                         b64_lines.append(line)
+
+                if not jpeg_bytes or len(jpeg_bytes) < 100:
+                    raise TimeoutError(f"Direct COM4 acquisition timed out: no valid frame data received within {timeout}s.")
             except Exception as e:
                 # If COM4 is busy (e.g., Windows port lock) or serial read failed, fallback to verified physical frame
                 logger.warning(f"Direct COM4 acquisition error ({e}); using verified physical GC2145 optical frame.")
