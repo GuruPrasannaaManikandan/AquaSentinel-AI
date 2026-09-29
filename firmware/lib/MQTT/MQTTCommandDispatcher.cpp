@@ -2,6 +2,10 @@
 #include <string.h>
 #include <Arduino.h>
 
+#ifdef HIGH
+#undef HIGH
+#endif
+
 MQTTCommandDispatcher::MQTTCommandDispatcher(EventDispatcher* dispatcher) : _dispatcher(dispatcher) {}
 
 bool MQTTCommandDispatcher::handleCommand(const char* payload) {

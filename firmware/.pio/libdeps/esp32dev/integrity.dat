@@ -1,0 +1,4 @@
+bblanchon/ArduinoJson @ ^6.21.3
+paulstoffregen/OneWire @ ^2.3.7
+milesburton/DallasTemperature @ ^3.9.0
+knolleary/PubSubClient @ ^2.8

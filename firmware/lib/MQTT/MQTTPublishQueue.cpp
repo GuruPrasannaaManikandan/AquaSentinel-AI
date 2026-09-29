@@ -10,10 +10,10 @@ bool MQTTPublishQueue::enqueue(const char* topic, const char* payload, int qos, 
     }
 
     MQTTPublishItem& item = _queue[_tail];
-    strncpy(item.topic, topic, 63);
-    item.topic[63] = '\0';
-    strncpy(item.payload, payload, 127);
-    item.payload[127] = '\0';
+    strncpy(item.topic, topic, sizeof(item.topic) - 1);
+    item.topic[sizeof(item.topic) - 1] = '\0';
+    strncpy(item.payload, payload, sizeof(item.payload) - 1);
+    item.payload[sizeof(item.payload) - 1] = '\0';
     item.qos = qos;
     item.retain = retain;
     item.retryCount = 0;

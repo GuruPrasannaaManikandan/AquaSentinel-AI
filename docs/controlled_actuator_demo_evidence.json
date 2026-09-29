@@ -1,0 +1,118 @@
+{
+  "title": "CONTROLLED DEMONSTRATION SCENARIO \u2014 NOT REAL WATER CLASSIFICATION",
+  "timestamp": "2026-09-29T07:01:32.903125+00:00",
+  "target_device": "AQUA_FRESH_001",
+  "water_condition": "Physical sensors in fresh water (uncalibrated pH / unverified turbidity)",
+  "pump_status": "Relay actuator verified electrically; pump unavailable.",
+  "overall_status": "PASS",
+  "scenarios": [
+    {
+      "step": 1,
+      "scenario": "NORMAL",
+      "effective_state": "NORMAL",
+      "expected": {
+        "green": "ON",
+        "yellow": "OFF",
+        "red": "OFF",
+        "buzzer": "OFF",
+        "relay": "OFF"
+      },
+      "observed": {
+        "green": "ON",
+        "yellow": "OFF",
+        "red": "OFF",
+        "buzzer": "OFF",
+        "relay": "OFF"
+      },
+      "status": "PASS",
+      "hardware_pins": {
+        "GPIO25_Green": "ON",
+        "GPIO26_Yellow": "OFF",
+        "GPIO27_Red": "OFF",
+        "GPIO14_Buzzer": "OFF",
+        "GPIO19_Relay": "OFF"
+      }
+    },
+    {
+      "step": 2,
+      "scenario": "WARNING",
+      "effective_state": "WARNING",
+      "expected": {
+        "green": "OFF",
+        "yellow": "ON",
+        "red": "OFF",
+        "buzzer": "OFF",
+        "relay": "ON"
+      },
+      "observed": {
+        "green": "OFF",
+        "yellow": "ON",
+        "red": "OFF",
+        "buzzer": "OFF",
+        "relay": "ON"
+      },
+      "status": "PASS",
+      "hardware_pins": {
+        "GPIO25_Green": "OFF",
+        "GPIO26_Yellow": "ON",
+        "GPIO27_Red": "OFF",
+        "GPIO14_Buzzer": "OFF",
+        "GPIO19_Relay": "ON"
+      }
+    },
+    {
+      "step": 3,
+      "scenario": "CRITICAL",
+      "effective_state": "CRITICAL",
+      "expected": {
+        "green": "OFF",
+        "yellow": "OFF",
+        "red": "ON",
+        "buzzer": "ON",
+        "relay": "ON"
+      },
+      "observed": {
+        "green": "OFF",
+        "yellow": "OFF",
+        "red": "ON",
+        "buzzer": "ON",
+        "relay": "ON"
+      },
+      "status": "PASS",
+      "hardware_pins": {
+        "GPIO25_Green": "OFF",
+        "GPIO26_Yellow": "OFF",
+        "GPIO27_Red": "ON",
+        "GPIO14_Buzzer": "ON",
+        "GPIO19_Relay": "ON"
+      }
+    },
+    {
+      "step": 4,
+      "scenario": "RESTORE",
+      "effective_state": "NORMAL",
+      "expected": {
+        "green": "ON",
+        "yellow": "OFF",
+        "red": "OFF",
+        "buzzer": "OFF",
+        "relay": "OFF"
+      },
+      "observed": {
+        "green": "ON",
+        "yellow": "OFF",
+        "red": "OFF",
+        "buzzer": "OFF",
+        "relay": "OFF"
+      },
+      "status": "PASS",
+      "hardware_pins": {
+        "GPIO25_Green": "ON",
+        "GPIO26_Yellow": "OFF",
+        "GPIO27_Red": "OFF",
+        "GPIO14_Buzzer": "OFF",
+        "GPIO19_Relay": "OFF"
+      }
+    }
+  ]
+}

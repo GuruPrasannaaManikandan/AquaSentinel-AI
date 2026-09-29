@@ -106,3 +106,54 @@ class AISLoader:
             results.append(payload)
 
         return results[0] if len(results) == 1 else results
+
+    def predict_anomaly_adaptive(self, key, X, matching_radius=None):
+        """
+        Executes V5.4 Adaptive AIS anomaly detection on input DataFrame X.
+        Evaluates memory cells (Secondary Immune Response) and dynamic sensitivity.
+        """
+        if not hasattr(self, "adaptive_models"):
+            self.adaptive_models = {}
+
+        if key not in self.active_models:
+            self.load_model(key)
+
+        from src.ais.adaptive_ais import AdaptiveAIS
+        if key not in self.adaptive_models:
+            self.adaptive_models[key] = AdaptiveAIS(
+                base_nsa=self.active_models[key]["model"],
+                dataset_key=key
+            )
+
+        model_info = self.active_models[key]
+        preprocessor = model_info["preprocessor"]
+        registry_entry = model_info["registry_entry"]
+        expected_features = registry_entry["feature_schema"]
+
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("Input must be a pandas DataFrame.")
+
+        missing = [f for f in expected_features if f not in X.columns]
+        if missing:
+            raise ValueError(f"Input is missing required features: {missing}")
+
+        X_scaled = preprocessor.transform(X)
+        adaptive_engine = self.adaptive_models[key]
+        adapt_results = adaptive_engine.predict_adaptive(X_scaled, base_radius=matching_radius)
+
+        results = []
+        for i, res in enumerate(adapt_results):
+            payload = {
+                "is_anomaly": bool(res.is_anomaly),
+                "anomaly_score": float(res.anomaly_score),
+                "matched_detector_count": int(res.matched_detector_count),
+                "nearest_detector_distance": float(res.nearest_detector_distance) if np.isfinite(res.nearest_detector_distance) else 999.0,
+                "ais_version": registry_entry["version"],
+                "immune_response_type": res.immune_response_type,
+                "memory_cell_matches": res.memory_cell_matches,
+                "active_memory_cells_count": res.active_memory_cells_count,
+                "dynamic_radius_used": res.dynamic_radius_used
+            }
+            results.append(payload)
+
+        return results[0] if len(results) == 1 else results

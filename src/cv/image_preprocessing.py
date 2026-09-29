@@ -8,6 +8,7 @@ from typing import Optional, Dict, Any, Tuple, List
 from PIL import Image, ImageOps
 
 from src.cv.camera_driver import CameraFrame
+from src.cv.optical_quality import OpticalQualityEvaluator, OpticalQualityResult
 
 @dataclass
 class PreprocessedImage:
@@ -56,6 +57,7 @@ class ImagePreprocessor:
         self.std = np.array(std if std is not None else [1.0, 1.0, 1.0], dtype=np.float32)
         self.expand_batch_dim = expand_batch_dim
         self.config = config or {}
+        self.optical_evaluator = OpticalQualityEvaluator()
 
     def validate_input(self, frame: CameraFrame) -> Tuple[bool, str]:
         """
@@ -197,7 +199,10 @@ class ImagePreprocessor:
                 arr = np.expand_dims(arr, axis=0) # (1, H, W, C)
                 data_fmt = "NHWC"
 
-            # Step 7: Latency Measurement & Metadata Output
+            # Step 7: V5.2 Optical Quality Assessment
+            opt_res = self.optical_evaluator.evaluate_image(pil_img, frame_id=frame.frame_id)
+
+            # Step 8: Latency Measurement & Metadata Output
             duration_ms = (time.perf_counter() - start_time) * 1000.0
 
             meta = {
@@ -206,7 +211,11 @@ class ImagePreprocessor:
                 "color_space": self.color_space,
                 "aspect_ratio_mode": self.aspect_ratio_mode,
                 "target_size": self.target_size,
-                "source_metadata": frame.metadata
+                "source_metadata": frame.metadata,
+                "optical_quality": opt_res.to_dict(),
+                "q_visual": opt_res.q_visual,
+                "quality_state": opt_res.quality_state,
+                "quality_flags": opt_res.quality_flags
             }
 
             return PreprocessedImage(
@@ -249,3 +258,7 @@ class ImagePreprocessor:
                     "source_metadata": frame.metadata
                 }
             )
+
+    def preprocess(self, frame: CameraFrame) -> PreprocessedImage:
+        """Alias for process() to ensure full interoperability."""
+        return self.process(frame)

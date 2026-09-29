@@ -208,6 +208,8 @@ void FSM::executeUpdateActions(State state) {
     switch (state) {
         case State::INITIALIZING: {
             TelemetryData data = _hal.readAllSensors();
+            Serial.print("[FSM-INIT] data.sensor_status = ");
+            Serial.println(data.sensor_status);
             if (strcmp(data.sensor_status, "FAULT") != 0) {
                 dispatch(Event::SENSORS_READY, "HAL telemetry online");
             } else {

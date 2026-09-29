@@ -23,15 +23,32 @@ bool TelemetryPublisher::publishTelemetry(const TelemetryData& data, float batte
     doc["dataset_route"] = _datasetRoute;
     
     JsonObject loc = doc.createNestedObject("location");
-    loc["latitude"] = data.latitude;
-    loc["longitude"] = data.longitude;
+    if (data.latitude <= -900.0 || data.longitude <= -900.0) {
+        loc["latitude"] = nullptr;
+        loc["longitude"] = nullptr;
+    } else {
+        loc["latitude"] = data.latitude;
+        loc["longitude"] = data.longitude;
+    }
 
     JsonObject sensors = doc.createNestedObject("sensors");
-    sensors["temperature_c"] = data.temperature_c;
-    sensors["salinity_ppt"] = data.salinity_ppt;
+    if (data.temperature_c <= -900.0f) {
+        sensors["temperature_c"] = nullptr;
+    } else {
+        sensors["temperature_c"] = data.temperature_c;
+    }
+    if (data.salinity_ppt <= -900.0f) {
+        sensors["salinity_ppt"] = nullptr;
+    } else {
+        sensors["salinity_ppt"] = data.salinity_ppt;
+    }
     sensors["ph"] = data.ph;
     sensors["turbidity_ntu"] = data.turbidity_ntu;
-    sensors["dissolved_oxygen_mg_l"] = data.dissolved_oxygen_mg_l;
+    if (data.dissolved_oxygen_mg_l <= -900.0f) {
+        sensors["dissolved_oxygen_mg_l"] = nullptr;
+    } else {
+        sensors["dissolved_oxygen_mg_l"] = data.dissolved_oxygen_mg_l;
+    }
     sensors["battery"] = battery;
     sensors["rssi"] = rssi;
     sensors["distance_to_water_m"] = (strcmp(_datasetRoute, "caml") == 0) ? 120.0 : 0.0;

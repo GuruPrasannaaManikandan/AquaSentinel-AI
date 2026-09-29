@@ -278,7 +278,7 @@ In an aquatic ecological warning network, predicting a severe toxic bloom condit
         for label, (_, _, fn_stats) in caml_results.items():
             f.write(f"| {label} | {fn_stats['dangerous_recall']:.4f} | {fn_stats['dangerous_fnr']:.4f} | {fn_stats['predicted_as_normal']} |\n")
             
-        f.write("""
+        f.write(r"""
 ---
 
 ## 2. HABSOS (Marine Karenia brevis) Dangerous Class Audit

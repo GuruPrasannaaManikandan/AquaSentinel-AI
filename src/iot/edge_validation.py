@@ -1,13 +1,15 @@
 import numpy as np
 import datetime
+from src.iot.sensor_quality import SensorQualityEvaluator, SensorQualityResult
 
 class EdgeValidator:
     """
     Performs local embedded-side validation on telemetry readings before transmission.
     Checks for NaN/inf values, impossible ranges, missing keys, invalid GPS coordinates, 
     and frozen/repeated values.
+    Enhanced in V5.1 to provide quantitative sensor quality scoring via SensorQualityEvaluator.
     """
-    def __init__(self, history_limit=5, bounds=None):
+    def __init__(self, history_limit=5, bounds=None, quality_evaluator=None):
         self.history_limit = history_limit
         # If bounds is provided, use it, else fallback to standard physical limits
         self.bounds = bounds or {
@@ -27,6 +29,8 @@ class EdgeValidator:
             "turbidity_ntu": [],
             "dissolved_oxygen_mg_l": []
         }
+        self.quality_evaluator = quality_evaluator or SensorQualityEvaluator()
+        self.last_quality_result: SensorQualityResult = None
 
     def validate(self, readings):
         """
@@ -131,3 +135,22 @@ class EdgeValidator:
         is_valid = health_status != "FAULT"
 
         return is_valid, errors, health_status
+
+    def evaluate_quality(self, readings, timestamp=None, device_id="DEFAULT") -> SensorQualityResult:
+        """Evaluates quantitative sensor quality and caches result."""
+        result = self.quality_evaluator.evaluate(readings, timestamp=timestamp, device_id=device_id)
+        self.last_quality_result = result
+        return result
+
+    def validate_with_quality(self, readings, timestamp=None, device_id="DEFAULT"):
+        """
+        Executes legacy physical boundary validation and V5.1 sensor quality assessment.
+        Returns:
+            is_valid (bool): True if reading passes critical safety checks.
+            errors (list of str): List of validation error strings.
+            health_status (str): "OK", "DEGRADED", or "FAULT".
+            quality_result (SensorQualityResult): V5.1 structured quality metrics.
+        """
+        is_valid, errors, health_status = self.validate(readings)
+        quality_result = self.evaluate_quality(readings, timestamp=timestamp, device_id=device_id)
+        return is_valid, errors, health_status, quality_result

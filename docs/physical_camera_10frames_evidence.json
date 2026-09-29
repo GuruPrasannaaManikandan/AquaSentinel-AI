@@ -1,0 +1,122 @@
+[
+  {
+    "frame_number": 1,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 8574,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.104,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:37.299213+00:00"
+  },
+  {
+    "frame_number": 2,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 9324,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.194,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:38.731404+00:00"
+  },
+  {
+    "frame_number": 3,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 9198,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.178,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:40.225716+00:00"
+  },
+  {
+    "frame_number": 4,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 7977,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.035,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:41.704537+00:00"
+  },
+  {
+    "frame_number": 5,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 8744,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.126,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:43.039598+00:00"
+  },
+  {
+    "frame_number": 6,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 8778,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.129,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:44.466196+00:00"
+  },
+  {
+    "frame_number": 7,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 8854,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.138,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:45.895845+00:00"
+  },
+  {
+    "frame_number": 8,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 8861,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.139,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:47.334571+00:00"
+  },
+  {
+    "frame_number": 9,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 8795,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.13,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:48.773568+00:00"
+  },
+  {
+    "frame_number": 10,
+    "width": 320,
+    "height": 240,
+    "channels": 3,
+    "format": "JPEG",
+    "buffer_size_bytes": 8835,
+    "magic_bytes": "0xFF 0xD8",
+    "capture_latency_sec": 1.135,
+    "capture_success": true,
+    "timestamp": "2026-09-29T06:10:50.203887+00:00"
+  }
+]

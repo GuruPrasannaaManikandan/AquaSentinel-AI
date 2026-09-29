@@ -26,6 +26,32 @@ class DeviceHealthSchema(BaseModel):
     mqtt_connected: bool
     sensor_status: str
 
+class SensorQualityComponentSchema(BaseModel):
+    sensor_name: str
+    raw_value: Optional[float] = None
+    quality_score: float
+    status: str
+    rate_of_change: Optional[float] = None
+    z_score: Optional[float] = None
+    is_outlier: bool = False
+    is_noisy: bool = False
+    is_drifting: bool = False
+    is_stuck: bool = False
+    is_missing: bool = False
+    reasons: List[str] = Field(default_factory=list)
+
+class SensorQualitySchema(BaseModel):
+    overall_quality: float
+    validation_state: str
+    timestamp: str
+    components: Dict[str, SensorQualityComponentSchema] = Field(default_factory=dict)
+    anomaly_flags: List[str] = Field(default_factory=list)
+    reason_codes: List[str] = Field(default_factory=list)
+    cross_sensor_consistency: float = 1.0
+    cross_sensor_issues: List[str] = Field(default_factory=list)
+    stale_data_status: str = "FRESH"
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
 class TelemetryPayloadSchema(BaseModel):
     schema_version: str
     device_id: str
@@ -35,6 +61,7 @@ class TelemetryPayloadSchema(BaseModel):
     location: LocationSchema
     sensors: SensorsSchema
     device_health: DeviceHealthSchema
+    sensor_quality: Optional[SensorQualitySchema] = None
 
 class MLEvidenceSchema(BaseModel):
     predicted_class: Any

@@ -2,6 +2,10 @@
 #include <Arduino.h>
 #include <stdio.h>
 
+#ifdef HIGH
+#undef HIGH
+#endif
+
 RecoveryManager::RecoveryManager(EventDispatcher* dispatcher)
     : _dispatcher(dispatcher), _escalationLevel(RecoveryEscalationLevel::RETRY), _retryCount(0), _maxRetries(3) {
     strcpy(_status, "IDLE");

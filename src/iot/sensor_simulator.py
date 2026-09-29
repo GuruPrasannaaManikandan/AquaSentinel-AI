@@ -59,12 +59,12 @@ class AquaticSensorSimulator:
                 distance_to_water = 270.0
                 timestamp = datetime.datetime(2021, 4, 28, 12, 0, 0)
                 
-                # Normal sensors
-                temperature = self.rng.uniform(20.0, 26.0)
-                salinity = self.rng.uniform(0.1, 0.3)
-                ph = self.rng.uniform(7.2, 7.8)
-                turbidity = self.rng.uniform(1.0, 5.0)
-                do = self.rng.uniform(7.5, 9.0)
+                # Normal sensors: steady baseline with natural micro-jitter
+                temperature = 23.0 + jitter_t
+                salinity = 0.2 + (jitter_s * 0.1)
+                ph = 7.4 + jitter_p
+                turbidity = 3.0 + jitter_tr
+                do = 8.2 + jitter_do
                 sample_depth = 0.5
             else: # Marine
                 # HABSOS Row 4 (normal context: pred = normal, true = normal)
@@ -239,6 +239,96 @@ class AquaticSensorSimulator:
             do = None
             distance_to_water = None
             sample_depth = None
+
+        elif scenario == "SUDDEN_SPIKE":
+            # Normal baseline with a physically implausible single-step spike
+            lat = 35.9086 if is_fresh else 26.6649
+            lon = -79.1469 if is_fresh else -80.0418
+            distance_to_water = 270.0 if is_fresh else 0.0
+            sample_depth = 0.5
+            temperature = 22.5
+            salinity = 0.2 if is_fresh else 30.0
+            # Spike pH to 9.8 (or temp by +12°C) on step >= 2
+            ph = 9.8 if self.step_counter >= 2 else 7.4
+            turbidity = 3.5
+            do = 8.0
+
+        elif scenario == "NOISY_SENSOR":
+            # High-amplitude alternating noise/jitter exceeding sensor noise floor
+            lat = 35.9086 if is_fresh else 26.6649
+            lon = -79.1469 if is_fresh else -80.0418
+            distance_to_water = 270.0 if is_fresh else 0.0
+            sample_depth = 0.5
+            temperature = 22.0
+            salinity = 0.2 if is_fresh else 30.0
+            # High alternating fluctuation on pH: 7.2 -> 8.5 -> 7.1 -> 8.6
+            flip = 1.0 if (self.step_counter % 2 == 0) else -1.0
+            ph = 7.8 + (flip * 0.85)
+            turbidity = 4.0
+            do = 7.5
+
+        elif scenario == "SENSOR_DRIFT":
+            # Monotonic artificial drift on pH while other coupled sensors remain stable
+            lat = 35.9086 if is_fresh else 26.6649
+            lon = -79.1469 if is_fresh else -80.0418
+            distance_to_water = 270.0 if is_fresh else 0.0
+            sample_depth = 0.5
+            temperature = 22.0
+            salinity = 0.2 if is_fresh else 30.0
+            drift_val = min(self.step_counter * 0.20, 2.5)
+            ph = 7.2 + drift_val
+            turbidity = 3.5
+            do = 8.0  # DO does not follow pH drift (uncoupled)
+
+        elif scenario == "STUCK_SENSOR":
+            # Exact frozen float values with zero natural jitter
+            lat = 35.9086 if is_fresh else 26.6649
+            lon = -79.1469 if is_fresh else -80.0418
+            distance_to_water = 270.0 if is_fresh else 0.0
+            sample_depth = 0.5
+            temperature = 23.450
+            salinity = 0.250 if is_fresh else 31.500
+            ph = 7.420
+            turbidity = 4.100
+            do = 8.150
+
+        elif scenario == "MISSING_SENSOR":
+            # One or more sensor channels missing/None
+            lat = 35.9086 if is_fresh else 26.6649
+            lon = -79.1469 if is_fresh else -80.0418
+            distance_to_water = 270.0 if is_fresh else 0.0
+            sample_depth = 0.5
+            temperature = 22.0
+            salinity = 0.2 if is_fresh else 30.0
+            ph = None  # Missing pH channel
+            turbidity = 3.5
+            do = 8.0
+
+        elif scenario == "CROSS_SENSOR_INCONSISTENCY":
+            # Extreme pH spike with anoxic DO and pristine clear water
+            lat = 35.9086 if is_fresh else 26.6649
+            lon = -79.1469 if is_fresh else -80.0418
+            distance_to_water = 270.0 if is_fresh else 0.0
+            sample_depth = 0.5
+            temperature = 21.5
+            salinity = 0.2 if is_fresh else 30.0
+            ph = 9.5
+            turbidity = 1.2
+            do = 1.8  # Anoxic DO contradicts extreme alkaline pH in clear water
+
+        elif scenario == "LEGITIMATE_ENVIRONMENTAL_CHANGE":
+            # Biologically coupled bloom progression: temp warms, pH & DO both rise, turbidity rises
+            step_scale = min(self.step_counter * 0.15, 1.5)
+            lat = 35.9086 if is_fresh else 26.6649
+            lon = -79.1469 if is_fresh else -80.0418
+            distance_to_water = 270.0 if is_fresh else 0.0
+            sample_depth = 0.5
+            temperature = 22.0 + (step_scale * 1.5)
+            salinity = 0.2 if is_fresh else 30.0
+            ph = 7.4 + (step_scale * 0.8)       # pH rises with photosynthesis
+            do = 7.8 + (step_scale * 2.0)       # DO increases with oxygen production
+            turbidity = 3.5 + (step_scale * 8.0) # Turbidity increases with algal biomass
+
         else:
             raise ValueError(f"Unknown scenario: {scenario}")
 

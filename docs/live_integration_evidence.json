@@ -1,0 +1,594 @@
+{
+  "timestamp": "2026-09-29T09:12:18Z",
+  "raw_packet": {
+    "schema_version": "1.0",
+    "device_id": "AQUA_FRESH_001",
+    "timestamp": "2026-07-29T13:51:53Z",
+    "sequence_number": 8,
+    "dataset_route": "caml",
+    "location": {
+      "latitude": null,
+      "longitude": null
+    },
+    "sensors": {
+      "temperature_c": null,
+      "salinity_ppt": null,
+      "ph": 28.875,
+      "turbidity_ntu": 0.342490822,
+      "dissolved_oxygen_mg_l": null,
+      "battery": 98.5,
+      "rssi": -60,
+      "distance_to_water_m": 120,
+      "sample_depth": 0
+    },
+    "device_health": {
+      "wifi_connected": true,
+      "mqtt_connected": true,
+      "sensor_status": "OK"
+    }
+  },
+  "sensor_quality": {
+    "overall_quality": 0.1663,
+    "q_sensor": 0.1663,
+    "validation_state": "FAULT",
+    "quality_state": "FAULT",
+    "timestamp": "2026-07-29T13:51:53",
+    "components": {
+      "temperature_c": {
+        "sensor_name": "temperature_c",
+        "raw_value": null,
+        "quality_score": 0.0,
+        "status": "FAULT",
+        "rate_of_change": null,
+        "z_score": null,
+        "is_outlier": false,
+        "is_noisy": false,
+        "is_drifting": false,
+        "is_stuck": false,
+        "is_missing": true,
+        "reasons": [
+          "Missing or None reading for temperature_c"
+        ]
+      },
+      "ph": {
+        "sensor_name": "ph",
+        "raw_value": 28.875,
+        "quality_score": 0.15,
+        "status": "FAULT",
+        "rate_of_change": null,
+        "z_score": null,
+        "is_outlier": false,
+        "is_noisy": false,
+        "is_drifting": false,
+        "is_stuck": false,
+        "is_missing": false,
+        "reasons": [
+          "Out of physical bounds [0.0, 14.0]: val=28.88"
+        ]
+      },
+      "turbidity_ntu": {
+        "sensor_name": "turbidity_ntu",
+        "raw_value": 0.342490822,
+        "quality_score": 1.0,
+        "status": "OK",
+        "rate_of_change": null,
+        "z_score": null,
+        "is_outlier": false,
+        "is_noisy": false,
+        "is_drifting": false,
+        "is_stuck": false,
+        "is_missing": false,
+        "reasons": []
+      },
+      "salinity_ppt": {
+        "sensor_name": "salinity_ppt",
+        "raw_value": null,
+        "quality_score": 0.0,
+        "status": "FAULT",
+        "rate_of_change": null,
+        "z_score": null,
+        "is_outlier": false,
+        "is_noisy": false,
+        "is_drifting": false,
+        "is_stuck": false,
+        "is_missing": true,
+        "reasons": [
+          "Missing or None reading for salinity_ppt"
+        ]
+      },
+      "dissolved_oxygen_mg_l": {
+        "sensor_name": "dissolved_oxygen_mg_l",
+        "raw_value": null,
+        "quality_score": 0.0,
+        "status": "FAULT",
+        "rate_of_change": null,
+        "z_score": null,
+        "is_outlier": false,
+        "is_noisy": false,
+        "is_drifting": false,
+        "is_stuck": false,
+        "is_missing": true,
+        "reasons": [
+          "Missing or None reading for dissolved_oxygen_mg_l"
+        ]
+      }
+    },
+    "anomaly_flags": [
+      "SALINITY_PPT_MISSING",
+      "TEMPERATURE_C_MISSING",
+      "DISSOLVED_OXYGEN_MG_L_MISSING"
+    ],
+    "reason_codes": [
+      "SALINITY_PPT_MISSING",
+      "TEMPERATURE_C_MISSING",
+      "DISSOLVED_OXYGEN_MG_L_MISSING"
+    ],
+    "degradation_reasons": [
+      "SALINITY_PPT_MISSING",
+      "TEMPERATURE_C_MISSING",
+      "DISSOLVED_OXYGEN_MG_L_MISSING"
+    ],
+    "cross_sensor_consistency": 1.0,
+    "cross_sensor_issues": [],
+    "stale_data_status": "FRESH",
+    "metadata": {
+      "device_id": "AQUA_FRESH_001",
+      "freshness_factor": 1.0,
+      "components_count": 5
+    }
+  },
+  "pipeline_result": {
+    "dataset": "caml",
+    "ml_evidence": {
+      "predicted_class": 1,
+      "confidence": 0.3692312956158027,
+      "dangerous_class": false,
+      "model_id": "caml_phase3_champion-v3.0.0"
+    },
+    "ais_evidence": {
+      "is_anomaly": false,
+      "anomaly_score": 0.0,
+      "matched_detector_count": 0,
+      "nearest_detector_distance": 0.686608934110178,
+      "ais_model_id": "NSA-CAML-v1",
+      "immune_response_type": "SELF_TOLERANT"
+    },
+    "fusion": {
+      "final_state": "NORMAL",
+      "ecological_state": "NORMAL",
+      "composite_risk_score": 0.0125,
+      "reason_code": "ML_LOW_CONFIDENCE",
+      "reasoning": "ML model predicted normal with LOW confidence. Telemetry was in-distribution (AIS normal). System state set to NORMAL.",
+      "confidence_band": "LOW",
+      "multimodal": false,
+      "modality_weights": {
+        "sensor": 0.067,
+        "ais": 0.2,
+        "temporal": 0.0,
+        "visual": 0.0
+      }
+    },
+    "sensor_quality": {
+      "overall_quality": 0.1663,
+      "q_sensor": 0.1663,
+      "validation_state": "FAULT",
+      "quality_state": "FAULT",
+      "timestamp": "2026-07-29T13:51:53",
+      "components": {
+        "temperature_c": {
+          "sensor_name": "temperature_c",
+          "raw_value": null,
+          "quality_score": 0.0,
+          "status": "FAULT",
+          "rate_of_change": null,
+          "z_score": null,
+          "is_outlier": false,
+          "is_noisy": false,
+          "is_drifting": false,
+          "is_stuck": false,
+          "is_missing": true,
+          "reasons": [
+            "Missing or None reading for temperature_c"
+          ]
+        },
+        "ph": {
+          "sensor_name": "ph",
+          "raw_value": 28.875,
+          "quality_score": 0.15,
+          "status": "FAULT",
+          "rate_of_change": null,
+          "z_score": null,
+          "is_outlier": false,
+          "is_noisy": false,
+          "is_drifting": false,
+          "is_stuck": false,
+          "is_missing": false,
+          "reasons": [
+            "Out of physical bounds [0.0, 14.0]: val=28.88"
+          ]
+        },
+        "turbidity_ntu": {
+          "sensor_name": "turbidity_ntu",
+          "raw_value": 0.342490822,
+          "quality_score": 1.0,
+          "status": "OK",
+          "rate_of_change": null,
+          "z_score": null,
+          "is_outlier": false,
+          "is_noisy": false,
+          "is_drifting": false,
+          "is_stuck": false,
+          "is_missing": false,
+          "reasons": []
+        },
+        "salinity_ppt": {
+          "sensor_name": "salinity_ppt",
+          "raw_value": null,
+          "quality_score": 0.0,
+          "status": "FAULT",
+          "rate_of_change": null,
+          "z_score": null,
+          "is_outlier": false,
+          "is_noisy": false,
+          "is_drifting": false,
+          "is_stuck": false,
+          "is_missing": true,
+          "reasons": [
+            "Missing or None reading for salinity_ppt"
+          ]
+        },
+        "dissolved_oxygen_mg_l": {
+          "sensor_name": "dissolved_oxygen_mg_l",
+          "raw_value": null,
+          "quality_score": 0.0,
+          "status": "FAULT",
+          "rate_of_change": null,
+          "z_score": null,
+          "is_outlier": false,
+          "is_noisy": false,
+          "is_drifting": false,
+          "is_stuck": false,
+          "is_missing": true,
+          "reasons": [
+            "Missing or None reading for dissolved_oxygen_mg_l"
+          ]
+        }
+      },
+      "anomaly_flags": [
+        "SALINITY_PPT_MISSING",
+        "TEMPERATURE_C_MISSING",
+        "DISSOLVED_OXYGEN_MG_L_MISSING"
+      ],
+      "reason_codes": [
+        "SALINITY_PPT_MISSING",
+        "TEMPERATURE_C_MISSING",
+        "DISSOLVED_OXYGEN_MG_L_MISSING"
+      ],
+      "degradation_reasons": [
+        "SALINITY_PPT_MISSING",
+        "TEMPERATURE_C_MISSING",
+        "DISSOLVED_OXYGEN_MG_L_MISSING"
+      ],
+      "cross_sensor_consistency": 1.0,
+      "cross_sensor_issues": [],
+      "stale_data_status": "FRESH",
+      "metadata": {
+        "device_id": "AQUA_FRESH_001",
+        "freshness_factor": 1.0,
+        "components_count": 5
+      }
+    },
+    "temporal_evidence": null,
+    "multimodal_snapshot": {
+      "timestamp": "2026-01-01T00:00:00+00:00",
+      "device_id": "DEFAULT_DEVICE",
+      "modalities": {
+        "SENSOR": {
+          "modality": "SENSOR",
+          "timestamp": "2026-01-01T00:00:00+00:00",
+          "device_id": "DEFAULT_DEVICE",
+          "evidence_type": "WATER_CHEMISTRY",
+          "state": "FAULT",
+          "confidence": 0.3692312956158027,
+          "quality": 0.1663,
+          "reliability": 0.06652000000000001,
+          "severity": 0.0,
+          "source": "caml_phase3_champion-v3.0.0",
+          "feature_values": {},
+          "degradation_reason": "Sensor quality degraded (FAULT, Q=0.17)",
+          "valid": false,
+          "freshness_state": "CURRENT",
+          "age_seconds": 0.0
+        },
+        "AIS": {
+          "modality": "AIS",
+          "timestamp": "2026-01-01T00:00:00+00:00",
+          "device_id": "DEFAULT_DEVICE",
+          "evidence_type": "NOVELTY_SCORE",
+          "state": "NORMAL",
+          "confidence": 1.0,
+          "quality": 1.0,
+          "reliability": 0.2,
+          "severity": 0.0,
+          "source": "NSA-CAML-v1",
+          "feature_values": {
+            "is_anomaly": false,
+            "anomaly_score": 0.0,
+            "immune_response_type": "SELF_TOLERANT",
+            "matched_detectors": 0
+          },
+          "degradation_reason": null,
+          "valid": true,
+          "freshness_state": "CURRENT",
+          "age_seconds": 0.0
+        }
+      },
+      "available_modalities": [
+        "SENSOR",
+        "AIS"
+      ],
+      "missing_modalities": [
+        "VISION",
+        "TEMPORAL",
+        "HISTORICAL"
+      ],
+      "degraded_modalities": [
+        "SENSOR"
+      ],
+      "alignment_quality": 0.82,
+      "metadata": {
+        "item_count": 2,
+        "reference_time": null
+      }
+    },
+    "concordance": {
+      "concordance_state": "INCONCLUSIVE",
+      "agreement_score": 0.5,
+      "dominant_state": "NORMAL",
+      "supporting_modalities": [
+        "AIS"
+      ],
+      "dissenting_modalities": [],
+      "explanation": "Insufficient active modalities (1 < 2) to establish concordance."
+    },
+    "conflict": {
+      "conflict_detected": false,
+      "modalities_in_conflict": [],
+      "conflict_type": "NONE",
+      "severity": "NONE",
+      "explanation": "No evidential conflicts detected across active modalities.",
+      "recommended_handling": "STANDARD_FUSION",
+      "has_conflict": false,
+      "prescriptive_action": "STANDARD_FUSION"
+    },
+    "multimodal_state": {
+      "ecological_state": "NORMAL",
+      "composite_confidence": 0.369,
+      "evidence_strength": 0.0,
+      "supporting_modalities": [
+        "AIS"
+      ],
+      "conflicting_modalities": [],
+      "missing_modalities": [
+        "VISION",
+        "TEMPORAL",
+        "HISTORICAL"
+      ],
+      "degraded_modalities": [
+        "SENSOR"
+      ],
+      "uncertainty": 0.55,
+      "dominance_prevented": false,
+      "reason_codes": [
+        "MULTIMODAL_EVALUATED_OK"
+      ],
+      "explanation": "Ecological State: NORMAL (Confidence: 36.9%, Threat: 0.00). Nominal evidential synthesis.",
+      "timestamp": "2026-01-01T00:00:00+00:00",
+      "effective_risk_score": 0.0,
+      "confidence_score": 0.369,
+      "diagnostic_rationale": "Ecological State: NORMAL (Confidence: 36.9%, Threat: 0.00). Nominal evidential synthesis."
+    },
+    "multimodal_intelligence": {
+      "concordance": {
+        "concordance_state": "INCONCLUSIVE",
+        "agreement_score": 0.5,
+        "dominant_state": "NORMAL",
+        "supporting_modalities": [
+          "AIS"
+        ],
+        "dissenting_modalities": [],
+        "explanation": "Insufficient active modalities (1 < 2) to establish concordance."
+      },
+      "conflict": {
+        "conflict_detected": false,
+        "modalities_in_conflict": [],
+        "conflict_type": "NONE",
+        "severity": "NONE",
+        "explanation": "No evidential conflicts detected across active modalities.",
+        "recommended_handling": "STANDARD_FUSION",
+        "has_conflict": false,
+        "prescriptive_action": "STANDARD_FUSION"
+      },
+      "state_result": {
+        "ecological_state": "NORMAL",
+        "composite_confidence": 0.369,
+        "evidence_strength": 0.0,
+        "supporting_modalities": [
+          "AIS"
+        ],
+        "conflicting_modalities": [],
+        "missing_modalities": [
+          "VISION",
+          "TEMPORAL",
+          "HISTORICAL"
+        ],
+        "degraded_modalities": [
+          "SENSOR"
+        ],
+        "uncertainty": 0.55,
+        "dominance_prevented": false,
+        "reason_codes": [
+          "MULTIMODAL_EVALUATED_OK"
+        ],
+        "explanation": "Ecological State: NORMAL (Confidence: 36.9%, Threat: 0.00). Nominal evidential synthesis.",
+        "timestamp": "2026-01-01T00:00:00+00:00",
+        "effective_risk_score": 0.0,
+        "confidence_score": 0.369,
+        "diagnostic_rationale": "Ecological State: NORMAL (Confidence: 36.9%, Threat: 0.00). Nominal evidential synthesis."
+      },
+      "snapshot_summary": {
+        "available_modalities": [
+          "SENSOR",
+          "AIS"
+        ],
+        "missing_modalities": [
+          "VISION",
+          "TEMPORAL",
+          "HISTORICAL"
+        ],
+        "degraded_modalities": [
+          "SENSOR"
+        ],
+        "alignment_quality": 0.82,
+        "effective_risk_score": 0.0,
+        "dominance_prevented": false
+      }
+    },
+    "system_metadata": {
+      "fusion_version": "1.0.0",
+      "fusion_pipeline_time_ms": 0.167,
+      "sensor_quality": {
+        "overall_quality": 0.1663,
+        "q_sensor": 0.1663,
+        "validation_state": "FAULT",
+        "quality_state": "FAULT",
+        "timestamp": "2026-07-29T13:51:53",
+        "components": {
+          "temperature_c": {
+            "sensor_name": "temperature_c",
+            "raw_value": null,
+            "quality_score": 0.0,
+            "status": "FAULT",
+            "rate_of_change": null,
+            "z_score": null,
+            "is_outlier": false,
+            "is_noisy": false,
+            "is_drifting": false,
+            "is_stuck": false,
+            "is_missing": true,
+            "reasons": [
+              "Missing or None reading for temperature_c"
+            ]
+          },
+          "ph": {
+            "sensor_name": "ph",
+            "raw_value": 28.875,
+            "quality_score": 0.15,
+            "status": "FAULT",
+            "rate_of_change": null,
+            "z_score": null,
+            "is_outlier": false,
+            "is_noisy": false,
+            "is_drifting": false,
+            "is_stuck": false,
+            "is_missing": false,
+            "reasons": [
+              "Out of physical bounds [0.0, 14.0]: val=28.88"
+            ]
+          },
+          "turbidity_ntu": {
+            "sensor_name": "turbidity_ntu",
+            "raw_value": 0.342490822,
+            "quality_score": 1.0,
+            "status": "OK",
+            "rate_of_change": null,
+            "z_score": null,
+            "is_outlier": false,
+            "is_noisy": false,
+            "is_drifting": false,
+            "is_stuck": false,
+            "is_missing": false,
+            "reasons": []
+          },
+          "salinity_ppt": {
+            "sensor_name": "salinity_ppt",
+            "raw_value": null,
+            "quality_score": 0.0,
+            "status": "FAULT",
+            "rate_of_change": null,
+            "z_score": null,
+            "is_outlier": false,
+            "is_noisy": false,
+            "is_drifting": false,
+            "is_stuck": false,
+            "is_missing": true,
+            "reasons": [
+              "Missing or None reading for salinity_ppt"
+            ]
+          },
+          "dissolved_oxygen_mg_l": {
+            "sensor_name": "dissolved_oxygen_mg_l",
+            "raw_value": null,
+            "quality_score": 0.0,
+            "status": "FAULT",
+            "rate_of_change": null,
+            "z_score": null,
+            "is_outlier": false,
+            "is_noisy": false,
+            "is_drifting": false,
+            "is_stuck": false,
+            "is_missing": true,
+            "reasons": [
+              "Missing or None reading for dissolved_oxygen_mg_l"
+            ]
+          }
+        },
+        "anomaly_flags": [
+          "SALINITY_PPT_MISSING",
+          "TEMPERATURE_C_MISSING",
+          "DISSOLVED_OXYGEN_MG_L_MISSING"
+        ],
+        "reason_codes": [
+          "SALINITY_PPT_MISSING",
+          "TEMPERATURE_C_MISSING",
+          "DISSOLVED_OXYGEN_MG_L_MISSING"
+        ],
+        "degradation_reasons": [
+          "SALINITY_PPT_MISSING",
+          "TEMPERATURE_C_MISSING",
+          "DISSOLVED_OXYGEN_MG_L_MISSING"
+        ],
+        "cross_sensor_consistency": 1.0,
+        "cross_sensor_issues": [],
+        "stale_data_status": "FRESH",
+        "metadata": {
+          "device_id": "AQUA_FRESH_001",
+          "freshness_factor": 1.0,
+          "components_count": 5
+        }
+      },
+      "temporal_evidence": null
+    },
+    "system_event": {
+      "event_id": "evt_aa307ad9",
+      "timestamp": "2026-09-29T09:12:18.149193",
+      "event_type": "SYSTEM_STATE_NORMAL",
+      "target_fsm_state": "NORMAL",
+      "reason_code": "ML_LOW_CONFIDENCE",
+      "reasoning": "ML model predicted normal with LOW confidence. Telemetry was in-distribution (AIS normal). System state set to NORMAL.",
+      "multimodal": false,
+      "sensor_contribution": true,
+      "visual_contribution": false,
+      "conflict_detected": false,
+      "adapter_time_ms": 0.026,
+      "provenance": {
+        "fusion_version": "1.0.0",
+        "confidence_band": "LOW",
+        "dataset": "caml",
+        "raw_visual_state": null,
+        "raw_sensor_ml": 1
+      }
+    }
+  },
+  "actuator_state": "LEDs(G=OFF, Y=OFF, R=ON), Buzzer=ON, Pump=ON"
+}

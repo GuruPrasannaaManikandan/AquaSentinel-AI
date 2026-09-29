@@ -6,7 +6,8 @@
  */
 enum class DriverMode {
     MOCK,
-    PHYSICAL
+    PHYSICAL,
+    HYBRID
 };
 
 #endif

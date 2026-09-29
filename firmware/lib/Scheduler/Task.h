@@ -5,6 +5,10 @@
 #include "TaskPriority.h"
 #include "TaskContext.h"
 
+#ifdef DISABLED
+#undef DISABLED
+#endif
+
 enum class TaskState {
     READY,
     RUNNING,

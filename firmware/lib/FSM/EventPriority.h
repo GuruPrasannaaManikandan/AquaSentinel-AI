@@ -1,6 +1,13 @@
 #ifndef EVENT_PRIORITY_H
 #define EVENT_PRIORITY_H
 
+#ifdef LOW
+#undef LOW
+#endif
+#ifdef HIGH
+#undef HIGH
+#endif
+
 /**
  * @brief Enum class specifying prioritization bands for FSM event processing.
  */

@@ -16,6 +16,12 @@ bool CalibratedSensor::initialize() {
 }
 
 float CalibratedSensor::read() {
+    // If raw sensor is unavailable/deferred, pass through -999.0f without claiming fault
+    if (strcmp(_rawSensor->status(), "UNAVAILABLE") == 0) {
+        _lastValue = -999.0f;
+        return -999.0f;
+    }
+
     float rawValue = _rawSensor->read();
     
     // If raw reading represents a physical hardware error, bypass calibration
@@ -23,6 +29,13 @@ float CalibratedSensor::read() {
         _lastValidation = ValidationState::FAULT;
         _lastValue = -999.0f;
         return -999.0f;
+    }
+
+    // If raw sensor is unverified/uncalibrated (e.g. Turbidity optical probe pending trimpot adjustment),
+    // bypass polynomial NTU conversion so we do NOT claim false calibrated NTU.
+    if (strcmp(_rawSensor->status(), "UNVERIFIED_UNCALIBRATED") == 0) {
+        _lastValue = rawValue;
+        return rawValue; // Report raw reconstructed voltage
     }
 
     // Apply Calibration convert
@@ -36,6 +49,10 @@ float CalibratedSensor::read() {
 }
 
 bool CalibratedSensor::selfTest() {
+    if (strcmp(_rawSensor->status(), "UNAVAILABLE") == 0) {
+        return true;
+    }
+
     bool ok = _rawSensor->selfTest();
     if (!ok) {
         _lastValidation = ValidationState::FAULT;
@@ -45,9 +62,15 @@ bool CalibratedSensor::selfTest() {
 }
 
 const char* CalibratedSensor::status() {
-    // If raw hardware driver flags internal faults, override validation states
+    // If raw hardware driver flags internal faults or unverified states, override validation states
     if (strcmp(_rawSensor->status(), "FAULT") == 0) {
         return "FAULT";
+    }
+    if (strcmp(_rawSensor->status(), "UNVERIFIED_UNCALIBRATED") == 0) {
+        return "UNVERIFIED_UNCALIBRATED";
+    }
+    if (strcmp(_rawSensor->status(), "UNAVAILABLE") == 0) {
+        return "UNAVAILABLE";
     }
 
     switch (_lastValidation) {

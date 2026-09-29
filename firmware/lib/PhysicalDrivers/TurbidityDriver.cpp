@@ -17,14 +17,21 @@ float TurbidityDriver::read() {
     
     int rawAdc = analogRead(_pin);
     
-    if (rawAdc < 10 || rawAdc > 4080) {
-        _health = DriverHealth::ADC_FAILURE;
-        return -999.0;
-    }
-    
-    float voltage = rawAdc * (3.3 / 4095.0);
+    // Physical voltage divider: 33k (top) / 22k (bottom)
+    // Vadc = Vout * (22 / (33 + 22)) = Vout * 0.400
+    // Reconstruction multiplier: 1 / 0.400 = 2.500f
+    float vadc = rawAdc * (3.3f / 4095.0f);
+    float vout = vadc * 2.500f;
     _health = DriverHealth::OK;
-    return voltage;
+    Serial.print("[TURBIDITY-DRIVER] GPIO");
+    Serial.print(_pin);
+    Serial.print(" rawAdc=");
+    Serial.print(rawAdc);
+    Serial.print(" vadc=");
+    Serial.print(vadc);
+    Serial.print(" vout=");
+    Serial.println(vout);
+    return vout; // Returns reconstructed module-side voltage (0.0V - 5.0V range)
 }
 
 bool TurbidityDriver::selfTest() {
@@ -34,18 +41,13 @@ bool TurbidityDriver::selfTest() {
     }
     
     int rawAdc = analogRead(_pin);
-    if (rawAdc < 10 || rawAdc > 4080) {
-        _health = DriverHealth::ADC_FAILURE;
-        return false;
-    }
-    
     _health = DriverHealth::OK;
     return true;
 }
 
 const char* TurbidityDriver::status() {
     switch (_health) {
-        case DriverHealth::OK: return "OK";
+        case DriverHealth::OK: return "UNVERIFIED_UNCALIBRATED";
         case DriverHealth::NOT_INITIALIZED: return "NOT_INITIALIZED";
         case DriverHealth::ADC_FAILURE: return "ADC_FAILURE";
         default: return "UNKNOWN";

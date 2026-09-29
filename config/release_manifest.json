@@ -1,37 +1,65 @@
 {
-    "project_name": "IoT-Based Artificial Immune System for Aquatic Ecosystems",
-    "release_version": "1.0.0",
-    "release_date": "2026-07-13",
-    "python_version": ">=3.9",
-    "dependencies": {
-        "fastapi": ">=0.95.0",
-        "streamlit": ">=1.22.0",
-        "websockets": ">=11.0",
-        "scikit-learn": ">=1.2.0",
-        "pydantic": ">=2.0.0"
-    },
-    "active_ml_models": {
-        "caml": "caml_phase3_champion",
-        "habsos": "habsos_phase3_champion"
-    },
-    "active_ais_models": {
-        "caml": "caml_nsa_v1",
-        "habsos": "habsos_nsa_v1"
-    },
-    "active_fusion_version": "1.0.0",
-    "device_registry_version": "1.0.0",
-    "telemetry_schema_version": "1.0.0",
-    "api_version": "1.0.0",
-    "dashboard_version": "1.0.0",
-    "mqtt_transport_mode": "IN_MEMORY_MQTT",
-    "database_schema_version": "v1",
-    "verified_metric_source": "reports/phase9/final_verified_metrics.json",
-    "test_count": 180,
-    "known_limitations": [
-        "Phase 4 optimizations fully invalidated and rolled back.",
-        "Phase 5 OOD anomaly experiment remains exploratory.",
-        "HABSOS AIS has 0% known validation anomaly recall on bloom risk datasets.",
-        "Sensors, ESP32 device, and actuators are simulated using software models.",
-        "CAML Freshwater ML and AIS models are contextual geographic/temporal risk models; live sensor validation is handled via edge-side ESP32 EdgeValidator diagnostics."
-    ]
+  "project_name": "IoT-Based Artificial Immune System for Aquatic Ecosystems",
+  "release_version": "1.0.0",
+  "v4_release_version": "4.8.4",
+  "v5_release_version": "5.10.0",
+  "v6_release_version": "6.0.0",
+  "v6_cv_status": "SOFTWARE_COMPLETE",
+  "v7_release_version": "7.0.0",
+  "v7_multimodal_status": "SOFTWARE_COMPLETE",
+  "v8_release_version": "8.0.0",
+  "v8_status": "SOFTWARE_COMPLETE",
+  "release_date": "2026-09-20",
+  "python_version": ">=3.9",
+  "dependencies": {
+    "pandas": ">=2.0.0",
+    "numpy": ">=1.24.0",
+    "fastapi": ">=0.95.0",
+    "streamlit": ">=1.22.0",
+    "pydantic": ">=2.0.0",
+    "torch": ">=2.0.0",
+    "torchvision": ">=0.15.0",
+    "Pillow": ">=9.5.0",
+    "opencv-python": ">=4.7.0"
+  },
+  "milestones_completed": [
+    "V4.1", "V4.2", "V4.3", "V4.4", "V4.5", "V4.6", "V4.7", "V4.8.1", "V4.8.2", "V4.8.3", "V4.8.4", "V4.8.5", "V4.8.6",
+    "V5.1", "V5.2", "V5.3", "V5.4", "V5.5", "V5.6", "V5.7", "V5.8", "V5.9", "V5.10", "V6.0", "V7.0", "V8.0"
+  ],
+  "active_ml_models": {
+    "caml": "caml_phase3_champion",
+    "habsos": "habsos_phase3_champion",
+    "cv_bloom_model": "MobileNetV3-Small-AquaticBloom"
+  },
+  "active_ais_models": {
+    "caml": "caml_nsa_v1_adaptive",
+    "habsos": "habsos_nsa_v1_adaptive"
+  },
+  "cv_model_artifact": {
+    "model_name": "MobileNetV3-Small-AquaticBloom",
+    "model_version": "1.0.0",
+    "architecture": "mobilenet_v3_small",
+    "pt_path": "models/cv/aquatic_bloom_mobilenetv3.pt",
+    "metadata_path": "models/cv/aquatic_bloom_model_metadata.json",
+    "sha256": "19d84e0b1d27571296591434e02ec9331f14a49c75680f57c73333e7e53bb6bb",
+    "input_resolution": [224, 224],
+    "classes": ["NORMAL_WATER", "ALGAL_BLOOM", "TURBID_DISCOLORATION"]
+  },
+  "authoritative_hardware_mapping": "V4.8.1 Resolved GPIO Mapping",
+  "time_synchronization_version": "1.1.0",
+  "active_fusion_version": "8.0.0",
+  "device_registry_version": "1.0.0",
+  "telemetry_schema_version": "1.1.0",
+  "camera_schema_version": "1.1.0",
+  "api_version": "8.0.0",
+  "dashboard_version": "8.0.0",
+  "mqtt_transport_mode": "IN_MEMORY_MQTT / REAL_MQTT",
+  "database_schema_version": "v1",
+  "test_count": 435,
+  "v3_8_frozen_status": "ZERO_MODIFICATIONS",
+  "software_completion_status": "COMPLETE_AND_VERIFIED",
+  "physical_hardware_validation": "PENDING",
+  "physical_multimodal_hardware": "PENDING",
+  "physical_deployment_validation": "PENDING",
+  "physical_bench_wiring_readiness": "READY_FOR_BENCH_WIRING"
 }

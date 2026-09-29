@@ -1,0 +1,34 @@
+{
+  "sharpness": {
+    "blur_threshold_variance": 10.0,
+    "sharp_threshold_variance": 20.0,
+    "laplacian_kernel_size": 3
+  },
+  "exposure": {
+    "dark_mean_luminance_threshold": 30.0,
+    "overexposed_mean_luminance_threshold": 225.0,
+    "saturation_fraction_threshold": 0.60,
+    "ideal_mean_luminance_range": [80.0, 180.0]
+  },
+  "contrast": {
+    "min_std_dev": 1.0,
+    "min_shannon_entropy": 0.10,
+    "ideal_entropy": 5.0
+  },
+  "scoring_weights": {
+    "sharpness": 0.40,
+    "exposure": 0.35,
+    "contrast": 0.25
+  },
+  "temporal": {
+    "window_size_k": 3,
+    "max_frame_age_seconds": 30.0,
+    "min_consistent_frames_for_bloom": 3,
+    "transient_evidence_discount": 0.35
+  },
+  "quality_state_thresholds": {
+    "reliable": 0.85,
+    "acceptable": 0.65,
+    "degraded": 0.40
+  }
+}

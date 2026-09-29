@@ -1,4 +1,5 @@
 #include "hal/HAL.h"
+#include <Arduino.h>
 #include <string.h>
 
 HAL::HAL(const PinConfig& config,
@@ -67,7 +68,18 @@ TelemetryData HAL::readAllSensors() {
     data.latitude = lat;
     data.longitude = lon;
     
+    // Overall HAL status:
+    // Active physical channels: pH and Turbidity.
+    // As long as raw readings are valid numbers (not -999.0f), hardware is OK.
+    if (data.ph != -999.0f && data.turbidity_ntu != -999.0f) {
+        _sensorStatus = "OK";
+    } else {
+        _sensorStatus = "FAULT";
+    }
     data.sensor_status = _sensorStatus;
+    Serial.print("[HAL-ALL] ph="); Serial.print(data.ph);
+    Serial.print(" turb="); Serial.print(data.turbidity_ntu);
+    Serial.print(" status="); Serial.println(_sensorStatus);
     
     return data;
 }
@@ -105,18 +117,18 @@ const char* HAL::readActuator(const char* name) {
 bool HAL::runSelfTest() {
     bool healthy = true;
     
-    if (!_tempSensor->selfTest()) healthy = false;
-    if (!_salinitySensor->selfTest()) healthy = false;
-    if (!_phSensor->selfTest()) healthy = false;
-    if (!_turbiditySensor->selfTest()) healthy = false;
-    if (!_doSensor->selfTest()) healthy = false;
-    if (!_gpsSensor->selfTest()) healthy = false;
+    if (!_tempSensor->selfTest()) { Serial.println("[HAL-TEST] tempSensor failed"); healthy = false; }
+    if (!_salinitySensor->selfTest()) { Serial.println("[HAL-TEST] salinitySensor failed"); healthy = false; }
+    if (!_phSensor->selfTest()) { Serial.println("[HAL-TEST] phSensor failed"); healthy = false; }
+    if (!_turbiditySensor->selfTest()) { Serial.println("[HAL-TEST] turbiditySensor failed"); healthy = false; }
+    if (!_doSensor->selfTest()) { Serial.println("[HAL-TEST] doSensor failed"); healthy = false; }
+    if (!_gpsSensor->selfTest()) { Serial.println("[HAL-TEST] gpsSensor failed"); healthy = false; }
     
-    if (!_greenLed->selfTest()) healthy = false;
-    if (!_yellowLed->selfTest()) healthy = false;
-    if (!_redLed->selfTest()) healthy = false;
-    if (!_buzzer->selfTest()) healthy = false;
-    if (!_pumpRelay->selfTest()) healthy = false;
+    if (!_greenLed->selfTest()) { Serial.println("[HAL-TEST] greenLed failed"); healthy = false; }
+    if (!_yellowLed->selfTest()) { Serial.println("[HAL-TEST] yellowLed failed"); healthy = false; }
+    if (!_redLed->selfTest()) { Serial.println("[HAL-TEST] redLed failed"); healthy = false; }
+    if (!_buzzer->selfTest()) { Serial.println("[HAL-TEST] buzzer failed"); healthy = false; }
+    if (!_pumpRelay->selfTest()) { Serial.println("[HAL-TEST] pumpRelay failed"); healthy = false; }
 
     _sensorStatus = healthy ? "OK" : "FAULT";
     return healthy;

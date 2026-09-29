@@ -151,15 +151,20 @@ class MultimodalRuntimeOrchestrator:
                 
                 self.processed_frames += 1
             else:
-                # Camera fault or offline
+                # Camera fault, temporal fault, or offline
                 self.failed_frames += 1
+                reason_code = active_frame.metadata.get("reason_code") or f"VISUAL_{active_frame.status}"
                 visual_ev = VisualEvidence(
                     frame_id=active_frame.frame_id,
                     timestamp=active_frame.timestamp,
                     predicted_visual_class="UNCERTAIN",
                     confidence=0.0,
                     visual_state="CAMERA_FAULT",
-                    risk_level="UNKNOWN"
+                    risk_level="UNKNOWN",
+                    q_visual=0.0,
+                    quality_state="CORRUPTED",
+                    effective_confidence=0.0,
+                    metadata={"reason_code": reason_code, **active_frame.metadata}
                 )
         else:
             visual_ev = None

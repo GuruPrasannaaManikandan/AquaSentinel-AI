@@ -1,6 +1,13 @@
 #ifndef TASK_PRIORITY_H
 #define TASK_PRIORITY_H
 
+#ifdef LOW
+#undef LOW
+#endif
+#ifdef HIGH
+#undef HIGH
+#endif
+
 /**
  * @brief Enum representing priority ranks for scheduler sorting.
  */
