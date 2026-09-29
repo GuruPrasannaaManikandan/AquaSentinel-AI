@@ -19,12 +19,14 @@ struct WiFiDiagnostics {
     unsigned long shortestConnectionMs;
     unsigned long averageConnectionDurationMs;
     unsigned long averageReconnectIntervalMs;
+    unsigned long averageConnectTimeMs;
     float connectionSuccessPercentage;
 
     // Signal Metrics
     int rssi;
     int maxRSSI;
     int minRSSI;
+    int averageRSSI;
 
     // IP/MAC Cache
     char currentIp[16];

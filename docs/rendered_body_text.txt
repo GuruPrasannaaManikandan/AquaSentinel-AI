@@ -1,0 +1,33 @@
+🎛️ Node Control Station
+
+Select Target Edge Node
+
+AQUA_FRESH_001
+🧪 Edge Simulation Controls
+Stop
+Deploy
+🌊 IoT Aquatic Monitoring & Artificial Immune System Gateway
+
+Version 7.0 Advanced Multimodal Intelligence & Evidential Reasoning Platform
+
+📊 System Overview KPIs
+
+Active Devices Online
+
+2 / 2
+
+Telemetry Event Logs
+
+27227
+
+Total Warnings Emitted
+
+1826
+
+Critical Alarms Raised
+
+2
+
+Active Anomalies
+
+1

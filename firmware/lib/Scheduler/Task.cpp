@@ -1,6 +1,10 @@
 #include "Task.h"
 #include <Arduino.h>
 
+#ifdef DISABLED
+#undef DISABLED
+#endif
+
 Task::Task(TaskId id, const char* name, unsigned long intervalMs, TaskCallback callback, TaskPriority priority, bool enabled)
     : _id(id), _name(name), _intervalMs(intervalMs), _callback(callback), _priority(priority), _enabled(enabled), _state(enabled ? TaskState::READY : TaskState::DISABLED) {
     resetStats();

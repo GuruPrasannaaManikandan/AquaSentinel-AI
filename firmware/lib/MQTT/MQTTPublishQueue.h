@@ -5,7 +5,7 @@
 
 struct MQTTPublishItem {
     char topic[64];
-    char payload[128];
+    char payload[512];
     int qos;
     bool retain;
     int retryCount;

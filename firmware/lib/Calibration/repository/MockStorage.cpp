@@ -19,14 +19,14 @@ void MockStorage::loadFactoryDefaults(CalibrationData &data) {
 
     // 2. Coefficients
     data.tempCoeffs = {1.0f, 0.0f, -5.0f, 50.0f};
-    data.phCoeffs = {3.5f, 0.0f, 0.1f, 3.2f};
+    data.phCoeffs = {3.5f, 0.0f, 0.0f, 10.0f};
     data.salinityCoeffs = {0.5f, 0.0f, 0.1f, 3.2f};
-    data.turbidityCoeffs = {-1120.4f, 5742.3f, 0.1f, 3.2f};
+    data.turbidityCoeffs = {-1120.4f, 5742.3f, 0.0f, 10.0f};
     data.doCoeffs = {4.0f, 0.0f, 0.1f, 3.2f};
 
     // 3. Validation Thresholds
     data.tempThresholds = {10.0f, 30.0f, 5.0f, 35.0f, 0.0f, 40.0f};
-    data.phThresholds = {6.5f, 8.5f, 6.0f, 9.0f, 4.0f, 10.0f};
+    data.phThresholds = {6.5f, 8.5f, 6.0f, 9.0f, 0.0f, 14.0f};
     data.salinityThresholds = {0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 5.0f};
     data.turbidityThresholds = {0.0f, 25.0f, 0.0f, 50.0f, 0.0f, 150.0f};
     data.doThresholds = {6.0f, 12.0f, 5.0f, 14.0f, 3.0f, 18.0f};

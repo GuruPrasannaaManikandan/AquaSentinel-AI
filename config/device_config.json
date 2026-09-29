@@ -5,8 +5,8 @@
       "ecosystem_type": "Freshwater",
       "dataset_route": "caml",
       "wifi": {
-        "ssid": "AquaNet_Freshwater_AP",
-        "password": "aquasentinel_secure"
+        "ssid": "${AQUA_WIFI_SSID}",
+        "password": "${AQUA_WIFI_PASSWORD}"
       },
       "mqtt": {
         "host": "localhost",
@@ -19,18 +19,18 @@
         }
       },
       "gpio": {
+        "temperature": 33,
         "ph": 32,
-        "turbidity": 33,
-        "dissolved_oxygen": 34,
-        "gps": 21,
-        "rtc": 22,
-        "distance_to_water": 25,
-        "sample_depth": 26,
-        "green_led": 12,
-        "yellow_led": 13,
-        "red_led": 14,
-        "buzzer": 15,
-        "pump_relay": 16
+        "turbidity": 34,
+        "dissolved_oxygen": 35,
+        "salinity": 36,
+        "green_led": 25,
+        "yellow_led": 26,
+        "red_led": 27,
+        "buzzer": 14,
+        "pump_relay": 19,
+        "gps_rx": 16,
+        "gps_tx": 17
       },
       "calibration": {
         "ph": {
@@ -67,8 +67,8 @@
       "ecosystem_type": "Marine",
       "dataset_route": "habsos",
       "wifi": {
-        "ssid": "AquaNet_Marine_AP",
-        "password": "aquasentinel_secure"
+        "ssid": "${AQUA_WIFI_SSID}",
+        "password": "${AQUA_WIFI_PASSWORD}"
       },
       "mqtt": {
         "host": "localhost",
@@ -81,20 +81,18 @@
         }
       },
       "gpio": {
+        "temperature": 33,
         "ph": 32,
-        "turbidity": 33,
-        "dissolved_oxygen": 34,
-        "temperature": 35,
+        "turbidity": 34,
+        "dissolved_oxygen": 35,
         "salinity": 36,
-        "gps": 21,
-        "rtc": 22,
-        "distance_to_water": 25,
-        "sample_depth": 26,
-        "green_led": 12,
-        "yellow_led": 13,
-        "red_led": 14,
-        "buzzer": 15,
-        "pump_relay": 16
+        "green_led": 25,
+        "yellow_led": 26,
+        "red_led": 27,
+        "buzzer": 14,
+        "pump_relay": 19,
+        "gps_rx": 16,
+        "gps_tx": 17
       },
       "calibration": {
         "ph": {

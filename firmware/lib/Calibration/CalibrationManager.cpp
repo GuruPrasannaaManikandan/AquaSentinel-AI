@@ -1,5 +1,6 @@
 #include "CalibrationManager.h"
 #include "CalibrationMath.h"
+#include <Arduino.h>
 
 CalibrationManager::CalibrationManager(CalibrationProfile* profile) : _profile(profile) {}
 
@@ -28,6 +29,10 @@ float CalibrationManager::calibrate(SensorType type, float rawValue) {
 
     // Validate raw voltage limits to detect sensor disconnects or shorts
     if (rawValue < coeffs.minRawVolts || rawValue > coeffs.maxRawVolts) {
+        Serial.print("[CALIBRATE-REJECT] type="); Serial.print((int)type);
+        Serial.print(" raw="); Serial.print(rawValue);
+        Serial.print(" min="); Serial.print(coeffs.minRawVolts);
+        Serial.print(" max="); Serial.println(coeffs.maxRawVolts);
         return -999.0f; // raw input out of safe ranges
     }
 

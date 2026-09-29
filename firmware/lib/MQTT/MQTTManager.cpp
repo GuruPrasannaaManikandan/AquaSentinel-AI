@@ -3,6 +3,16 @@
 #include <Arduino.h>
 #include <string.h>
 
+#ifdef LOW
+#undef LOW
+#endif
+#ifdef HIGH
+#undef HIGH
+#endif
+#ifdef DISABLED
+#undef DISABLED
+#endif
+
 static MQTTManager* g_mqttManagerInstance = nullptr;
 
 static void globalMQTTCallback(const char* topic, const char* payload) {
@@ -57,7 +67,6 @@ void MQTTManager::connect() {
 void MQTTManager::disconnect() {
     MQTTState prev = _currentState;
     _service->disconnect();
-    _currentState = WiFiState::DISCONNECTED; // Wait, keep states type consistent with MQTTState!
     _currentState = MQTTState::DISCONNECTED;
 
     actionOnDisconnect("User Request");
@@ -314,4 +323,8 @@ void MQTTManager::update() {
     // Keep diagnostics in sync
     _diagnostics.currentState = _currentState;
     _diagnostics.queueDepth = _publishQueue.getCount();
+}
+
+bool MQTTManager::isConnected() const {
+    return _currentState == MQTTState::CONNECTED;
 }

@@ -57,6 +57,21 @@ class DeviceRuntimeManager:
         cycle_results = {}
         for device_id, device in self.devices.items():
             scenario = scenarios.get(device_id, "NORMAL")
+            # If physical telemetry exists in EventStore for AQUA_FRESH_001, do not overwrite with mock data
+            if device_id == "AQUA_FRESH_001" and hasattr(self, "gateway") and self.gateway and self.gateway.event_store:
+                try:
+                    latest = self.gateway.event_store.get_latest_telemetry("AQUA_FRESH_001")
+                    if latest and latest.get("temperature_c") is None and latest.get("ph") is not None:
+                        cycle_results[device_id] = {
+                            "telemetry": latest,
+                            "state": device.state,
+                            "sensor_status": latest.get("sensor_status", "OK"),
+                            "actuator_state": device.actuators.get_summary()
+                        }
+                        continue
+                except Exception:
+                    pass
+
             # This triggers the entire synchronous MQTT publish-receive loop
             telemetry = device.execute_one_complete_cycle(scenario=scenario, timestamp=timestamp)
             cycle_results[device_id] = {

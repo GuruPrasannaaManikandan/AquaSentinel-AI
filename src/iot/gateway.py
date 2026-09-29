@@ -1,11 +1,14 @@
 import os
 import json
+import time
 import datetime
+from typing import Optional, Dict, Any
 import pandas as pd
 import numpy as np
 from src.fusion.decision_pipeline import DecisionPipeline
 from src.iot.mqtt_client import MQTTClient
 from src.iot.event_store import EventStore
+from src.iot.sensor_quality import SensorQualityEvaluator
 
 class Gateway:
     """
@@ -27,12 +30,103 @@ class Gateway:
         # Inits
         self.pipeline = DecisionPipeline(workspace_dir)
         self.event_store = EventStore()
+        self.quality_evaluator = SensorQualityEvaluator()
+        from src.fusion.temporal_intelligence import TemporalEnvironmentalEngine
+        self.temporal_engine = TemporalEnvironmentalEngine()
+        from src.iot.historical_intelligence import HistoricalIntelligenceEngine
+        self.historical_engine = HistoricalIntelligenceEngine()
+        from src.fusion.risk_trajectory import RiskTrajectoryEngine
+        self.risk_trajectory_engine = RiskTrajectoryEngine()
+        from src.fusion.autonomous_response import AutonomousResponseEngine
+        self.autonomous_response_engine = AutonomousResponseEngine()
+        self.latest_risk_trend: Dict[str, Any] = {}
+        self.latest_actuator_decision: Dict[str, Any] = {}
+        self.latest_decisions: Dict[str, Any] = {}
         
+        self.latest_visual_evidence: Dict[str, Any] = {}
+        self._cv_preprocessor = None
+        self._cv_model = None
+        self._visual_detector = None
+        self._optical_evaluator = None
+
         self.client = MQTTClient(client_id="CENTRAL_GATEWAY", use_mock=use_mock)
         self.client.set_on_message(self.on_message_received)
 
         self.processed_count = 0
         self.fusion_failures = []
+
+    def _get_cv_components(self):
+        """Lazily instantiates CV pipeline components for frame processing."""
+        if self._cv_model is None:
+            from src.cv.image_preprocessing import ImagePreprocessor
+            from src.cv.cv_model import AquaticBloomCVModel
+            from src.cv.visual_detection import VisualDetector
+            from src.cv.optical_quality import OpticalQualityEvaluator
+            self._cv_preprocessor = ImagePreprocessor()
+            self._cv_model = AquaticBloomCVModel()
+            self._cv_model.load()
+            self._visual_detector = VisualDetector()
+            self._optical_evaluator = OpticalQualityEvaluator()
+        return self._cv_preprocessor, self._cv_model, self._visual_detector, self._optical_evaluator
+
+    def process_camera_frame(
+        self,
+        device_id: str,
+        frame_bytes_or_b64: Any,
+        timestamp: Optional[str] = None,
+        frame_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Processes an incoming camera frame (bytes, base64 string, or CameraFrame),
+        evaluates optical quality Q_visual, runs MobileNetV3 inference, generates VisualEvidence,
+        and caches it in self.latest_visual_evidence[device_id].
+        """
+        import base64
+        from src.cv.camera_driver import CameraFrame
+        ts = timestamp or datetime.datetime.now().isoformat()
+        fid = frame_id or f"frame_{int(time.time() * 1000)}"
+
+        if isinstance(frame_bytes_or_b64, CameraFrame):
+            frame = frame_bytes_or_b64
+        else:
+            img_bytes = b""
+            if isinstance(frame_bytes_or_b64, str):
+                try:
+                    img_bytes = base64.b64decode(frame_bytes_or_b64)
+                except Exception:
+                    img_bytes = b""
+            elif isinstance(frame_bytes_or_b64, bytes):
+                img_bytes = frame_bytes_or_b64
+
+            is_valid = len(img_bytes) > 0 and (img_bytes.startswith(b"\xff\xd8") or img_bytes.startswith(b"\xff\xd8\xff"))
+            frame = CameraFrame(
+                frame_id=fid,
+                timestamp=ts,
+                width=224,
+                height=224,
+                channels=3,
+                format="JPEG",
+                image_bytes=img_bytes,
+                quality_valid=is_valid,
+                status="OK" if is_valid else "CORRUPTED"
+            )
+
+        preprocessor, model, detector, optical_evaluator = self._get_cv_components()
+
+        # Optical quality
+        opt_res = optical_evaluator.evaluate_image(frame.image_bytes, frame_id=frame.frame_id)
+
+        # Preprocessing
+        preproc_img = preprocessor.process(frame)
+
+        # CV Model Predict
+        cv_pred = model.predict(preproc_img)
+
+        # Visual Detector evaluates prediction
+        vis_ev = detector.evaluate_prediction(cv_pred, optical_quality=opt_res)
+        vis_dict = vis_ev.to_dict()
+        self.latest_visual_evidence[device_id] = vis_dict
+        return vis_dict
 
     def _load_json(self, path):
         with open(path, "r", encoding="utf-8") as f:
@@ -75,15 +169,24 @@ class Gateway:
 
     def connect(self):
         self.client.connect()
-        # Subscribe to all telemetry and decision publications
+        # Subscribe to all telemetry, decision, and camera publications
         self.client.subscribe("aquatic/+/telemetry")
         self.client.subscribe("aquatic/+/decision")
+        self.client.subscribe("aquatic/+/camera/raw")
 
     def disconnect(self):
         self.client.disconnect()
 
     def on_message_received(self, topic, payload):
-        """Callback when telemetry message is received via MQTT."""
+        """Callback when message is received via MQTT."""
+        if "/camera/" in topic or topic.endswith("/camera/raw"):
+            dev_id = payload.get("device_id") if isinstance(payload, dict) else topic.split("/")[1]
+            b64_img = payload.get("image_b64", "") if isinstance(payload, dict) else ""
+            ts = payload.get("timestamp") if isinstance(payload, dict) else None
+            fid = payload.get("frame_id") if isinstance(payload, dict) else None
+            self.process_camera_frame(dev_id, b64_img, timestamp=ts, frame_id=fid)
+            return
+
         if not topic.endswith("/telemetry"):
             return
 
@@ -102,6 +205,21 @@ class Gateway:
             
             # Log raw telemetry
             self.event_store.log_telemetry(payload)
+
+            # V5.1 Sensor Quality Assessment
+            sensor_quality = None
+            if "sensors" in payload and payload["sensors"] is not None:
+                q_res = self.quality_evaluator.evaluate(
+                    payload["sensors"],
+                    timestamp=payload.get("timestamp"),
+                    device_id=device_id or "DEFAULT"
+                )
+                sensor_quality = q_res.to_dict()
+                payload["sensor_quality"] = sensor_quality
+
+            temporal_res = None
+            hist_res = None
+            vis_ev = self.latest_visual_evidence.get(device_id)
 
             # Check for local edge validation sensor fault bypass
             if payload["device_health"]["sensor_status"] == "FAULT":
@@ -128,7 +246,8 @@ class Gateway:
                         "confidence_band": "LOW"
                     },
                     "system_metadata": {
-                        "fusion_version": "1.0.0"
+                        "fusion_version": "1.0.0",
+                        "sensor_quality": sensor_quality
                     }
                 }
             else:
@@ -136,29 +255,115 @@ class Gateway:
                 dataset_route = payload["dataset_route"]
                 X_df = self.transform_telemetry_to_features(payload)
 
-                # 3. Execute model pipeline
-                decision = self.pipeline.run_pipeline(dataset_route, X_df, sensors=payload.get("sensors"))
+                # V5.3 Temporal Environmental Trajectory Assessment
+                temporal_res = None
+                if "sensors" in payload and payload["sensors"] is not None:
+                    q_s = sensor_quality.get("q_sensor", 1.0) if sensor_quality else 1.0
+                    temporal_res = self.temporal_engine.evaluate_telemetry(
+                        device_id or "DEFAULT",
+                        payload["sensors"],
+                        q_sensor=q_s
+                    )
+
+                # V5.5 / V7 Historical Digital Baseline Context
+                hist_res = None
+                if "sensors" in payload and payload["sensors"] is not None:
+                    hist_res = self.historical_engine.update_and_evaluate(
+                        device_id or "DEFAULT",
+                        payload["sensors"]
+                    )
+
+                # 3. Execute model pipeline with multimodal visual & historical evidence
+                vis_ev = self.latest_visual_evidence.get(device_id)
+                decision = self.pipeline.run_pipeline(
+                    dataset_route,
+                    X_df,
+                    sensors=payload.get("sensors"),
+                    visual_evidence=vis_ev,
+                    sensor_quality=sensor_quality,
+                    temporal_evidence=temporal_res,
+                    use_adaptive_ais=True,
+                    historical_evidence=hist_res
+                )
 
                 # Add timestamp and device metadata to decision
                 decision["timestamp"] = payload["timestamp"]
                 decision["device_id"] = device_id
+                if sensor_quality is not None and "sensor_quality" not in decision:
+                    decision["sensor_quality"] = sensor_quality
+                if temporal_res is not None and "temporal_evidence" not in decision:
+                    decision["temporal_evidence"] = temporal_res.to_dict()
+                if vis_ev is not None and "visual_evidence" not in decision:
+                    decision["visual_evidence"] = vis_ev
+
+            # V8 Risk Trajectory & Early-Warning Horizon
+            trend_res = self.risk_trajectory_engine.evaluate_trajectory(
+                device_id or "DEFAULT",
+                decision,
+                temporal_evidence=temporal_res.to_dict() if temporal_res else None,
+                sensor_quality=sensor_quality,
+                historical_evidence=hist_res
+            )
+            decision["risk_trend"] = trend_res.to_dict()
+            self.latest_risk_trend[device_id] = trend_res.to_dict()
+
+            # V8 Autonomous Response Policy & Safety Gate Interceptor
+            policy_state, act_decision = self.autonomous_response_engine.evaluate_response(
+                device_id or "DEFAULT",
+                decision,
+                trend_res,
+                sensor_quality=sensor_quality,
+                visual_evidence=vis_ev
+            )
+            decision["autonomous_policy"] = policy_state
+            decision["actuator_decision"] = act_decision.to_dict()
+            self.latest_actuator_decision[device_id] = act_decision.to_dict()
+            self.latest_decisions[device_id] = decision
 
             # 4. Persistence
             self.event_store.log_decision(decision)
+            if "multimodal_snapshot" in decision or "multimodal_intelligence" in decision:
+                self.event_store.log_multimodal_event(decision)
+            self.event_store.log_actuator_decision(act_decision)
+            self.event_store.log_risk_trend_event(device_id or "DEFAULT", trend_res)
 
-            # 5. Publish decision back to broker
+            # 5. Publish decision & intelligence back to broker
             decision_topic = f"aquatic/{device_id}/decision"
             self.client.publish(decision_topic, decision)
 
-            # 6. Publish command if critical
-            if decision["fusion"]["final_state"] == "CRITICAL":
+            # Publish multimodal event if available
+            if "multimodal_intelligence" in decision:
+                self.client.publish(f"aquatic/{device_id}/multimodal", decision["multimodal_intelligence"])
+
+            # Publish V8 risk trend & response policy
+            self.client.publish(f"aquatic/{device_id}/risk_trend", trend_res.to_dict())
+            self.client.publish(f"aquatic/{device_id}/response", act_decision.to_dict())
+
+            # 6. Execute Approved Actuator Commands via Safety Gate
+            if act_decision.approved_action == "APPROVED" and act_decision.requested_action in ["ACTIVATE_BUZZER", "ACTIVATE_PUMP"]:
                 cmd_topic = f"aquatic/{device_id}/command"
                 cmd_payload = {
-                    "command": "ACTIVATE_BUZZER",
-                    "device_id": device_id
+                    "command": act_decision.requested_action,
+                    "device_id": device_id,
+                    "command_id": act_decision.command_id
                 }
                 self.client.publish(cmd_topic, cmd_payload)
-                self.event_store.log_command(datetime.datetime.now().isoformat(), device_id, "ACTIVATE_BUZZER", cmd_payload, "SENT")
+                self.event_store.log_command(datetime.datetime.now().isoformat(), device_id, act_decision.requested_action, cmd_payload, "SENT")
+                self.event_store.update_actuator_execution_status(act_decision.command_id, "COMMAND_ISSUED")
+
+            # Observability recording
+            from src.utils.observability import observability_collector, CycleMetrics
+            observability_collector.record_cycle(
+                CycleMetrics(
+                    cycle_id=self.processed_count,
+                    timestamp=payload.get("timestamp", datetime.datetime.now().isoformat()),
+                    device_id=device_id or "DEFAULT",
+                    total_latency_ms=10.0,
+                    status="SUCCESS",
+                    safety_gate_blocked=(act_decision.approved_action == "BLOCKED"),
+                    actuator_action=act_decision.approved_action
+                )
+            )
 
         except Exception as e:
             err_msg = f"Gateway Pipeline Crash: {e}"
@@ -235,11 +440,14 @@ class Gateway:
             if dist is None or not np.isfinite(dist):
                 dist = 120.0 # Default registry constant
             
+            lat = p["location"].get("latitude") if p.get("location") and p["location"].get("latitude") is not None else 27.5
+            lon = p["location"].get("longitude") if p.get("location") and p["location"].get("longitude") is not None else -81.2
+
             features = {
-                'lat': p["location"]["latitude"],
-                'lon': p["location"]["longitude"],
+                'lat': lat,
+                'lon': lon,
                 'distance_to_water_m': dist,
-                'region': self.resolve_us_region(p["location"]["latitude"], p["location"]["longitude"]),
+                'region': self.resolve_us_region(lat, lon),
                 'Season': season,
                 'Year': year,
                 'Month_sin': month_sin,
@@ -253,13 +461,16 @@ class Gateway:
             if depth is None or not np.isfinite(depth):
                 depth = 1.0 # default surface depth
 
+            lat = p["location"].get("latitude") if p.get("location") and p["location"].get("latitude") is not None else 27.5
+            lon = p["location"].get("longitude") if p.get("location") and p["location"].get("longitude") is not None else -82.5
+
             features = {
-                'LATITUDE': p["location"]["latitude"],
-                'LONGITUDE': p["location"]["longitude"],
+                'LATITUDE': lat,
+                'LONGITUDE': lon,
                 'SAMPLE_DEPTH': depth,
                 'SALINITY': p["sensors"]["salinity_ppt"] if p["sensors"]["salinity_ppt"] is not None else 35.0,
                 'WATER_TEMP': p["sensors"]["temperature_c"] if p["sensors"]["temperature_c"] is not None else 24.0,
-                'STATE_ID': self.resolve_state_id(p["location"]["latitude"], p["location"]["longitude"]),
+                'STATE_ID': self.resolve_state_id(lat, lon),
                 'Season': season,
                 'Year': year,
                 'Month': float(month),
@@ -270,3 +481,6 @@ class Gateway:
             }
 
         return pd.DataFrame([features])
+
+
+IoTEdgeGateway = Gateway

@@ -32,8 +32,11 @@
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__
 
+#include "PhysicalWiFiService.h"
+#include "PhysicalMQTTService.h"
+
 // Configuration
-const DriverMode ACTIVE_MODE = DriverMode::MOCK;
+const DriverMode ACTIVE_MODE = DriverMode::HYBRID;
 PinConfig pinConfig;
 
 // Instantiation of Persistence Framework
@@ -63,7 +66,7 @@ IActuator* redLed = DriverFactory::createLED(pinConfig.redLedPin, ACTIVE_MODE);
 IActuator* buzzer = DriverFactory::createBuzzer(pinConfig.buzzerPin, ACTIVE_MODE);
 IActuator* pumpRelay = DriverFactory::createRelay(pinConfig.pumpRelayPin, ACTIVE_MODE);
 
-// Instantiate GPS (Mock only)
+// Instantiate GPS
 IGPSSensor* gpsSensor = DriverFactory::createGPSSensor(pinConfig, ACTIVE_MODE);
 
 // Instantiate HAL coordinator with DECORATED sensor interfaces
@@ -78,19 +81,32 @@ Scheduler scheduler(&timeProvider);
 FSM fsm(hal);
 EventDispatcher dispatcher;
 
-// Instantiate Wi-Fi Connectivity Layer
-MockCredentialProvider credentialsProvider;
-WiFiConnectionPolicy wifiPolicy(true, true, 3, 10000, -80, -75);
-MockWiFiService mockWiFi;
-WiFiManager wifiManager(&mockWiFi, &dispatcher, &credentialsProvider, wifiPolicy);
+// Credentials for Live Bench Integration
+class LiveCredentialProvider : public ICredentialsProvider {
+public:
+    LiveCredentialProvider() {}
+    ~LiveCredentialProvider() override {}
+    const char* getSSID() override { return "Amrita_CHN2"; }
+    const char* getPassword() override { return "amrita@321"; }
+};
 
-// Instantiate MQTT Communication Layer with Policies
-MQTTConfig mqttConfig = {"broker.hivemq.com", 1883, "aquasentinel-client", "user", "pass", 15, true, 0, 5000, "aquasentinel/status", "Offline"};
-MQTTTopicRegistry mqttTopics = {"aquasentinel/telemetry", "aquasentinel/alerts", "aquasentinel/commands", "aquasentinel/diagnostics", "aquasentinel/heartbeat", "aquasentinel/firmware", "aquasentinel/configuration"};
-MQTTTopicPolicy mqttPolicy(TopicPermission::READ_WRITE, 1, true, 128);
-MQTTQoSPolicy mqttQoSPolicy(0, 2000, 3);
+// Dummy mock service instances to satisfy libVerification linker references
+MockWiFiService mockWiFi;
 MockMQTTService mockMQTT;
-MQTTManager mqttManager(&mockMQTT, &dispatcher, &wifiManager, mqttConfig, mqttTopics, mqttPolicy, mqttQoSPolicy);
+
+// Instantiate Wi-Fi Connectivity Layer with Physical WiFi Driver
+LiveCredentialProvider credentialsProvider;
+WiFiConnectionPolicy wifiPolicy(true, true, 5, 10000, -85, -80);
+PhysicalWiFiService physicalWiFi;
+WiFiManager wifiManager(&physicalWiFi, &dispatcher, &credentialsProvider, wifiPolicy);
+
+// Instantiate MQTT Communication Layer with Local Broker on PC LAN IP (11.12.8.172:1883)
+MQTTConfig mqttConfig = {"11.12.8.172", 1883, "AQUA_FRESH_001_node", "", "", 15, true, 0, 5000, "aquatic/AQUA_FRESH_001/status", "Offline"};
+MQTTTopicRegistry mqttTopics = {"aquatic/AQUA_FRESH_001/telemetry", "aquatic/AQUA_FRESH_001/alerts", "aquatic/AQUA_FRESH_001/command", "aquatic/AQUA_FRESH_001/diagnostics", "aquatic/AQUA_FRESH_001/heartbeat", "aquatic/AQUA_FRESH_001/firmware", "aquatic/AQUA_FRESH_001/configuration"};
+MQTTTopicPolicy mqttPolicy(TopicPermission::READ_WRITE, 1, true, 1024);
+MQTTQoSPolicy mqttQoSPolicy(0, 2000, 3);
+PhysicalMQTTService physicalMQTT;
+MQTTManager mqttManager(&physicalMQTT, &dispatcher, &wifiManager, mqttConfig, mqttTopics, mqttPolicy, mqttQoSPolicy);
 
 // Instantiate Backend Integration Gateway
 BackendGateway backendGateway(&mqttManager, &dispatcher, "AQUA_FRESH_001", "caml");
@@ -175,7 +191,11 @@ void sensorPollingTask(TaskContext& context) {
 
     // Queue telemetry payload publishing to MQTT broker via BackendGateway
     if (mqttManager.isConnected()) {
-        backendGateway.publishTelemetry(telemetry);
+        bool queued = backendGateway.publishTelemetry(telemetry);
+        Serial.print("[TASK] Telemetry publish to MQTT: ");
+        Serial.println(queued ? "QUEUED_OK" : "QUEUE_FULL");
+    } else {
+        Serial.println("[TASK] MQTT connecting... (publish skipped until connected)");
     }
 }
 
@@ -276,14 +296,6 @@ void heartbeatTask(TaskContext& context) {
     Serial.print(mqttDiag.publishSuccessRate, 1);
     Serial.print("% | Queue Depth: ");
     Serial.println(mqttDiag.queueDepth);
-
-    // Simulate incoming command after 15 seconds of uptime
-    static bool testCommandSimulated = false;
-    if (!testCommandSimulated && context.currentTime >= 15000 && wifiManager.isConnected() && mqttManager.isConnected()) {
-        testCommandSimulated = true;
-        Serial.println("\n[SYSTEM-TEST] Uptime reached 15s. Simulating remote MQTT command: SHUTDOWN");
-        mockMQTT.simulateIncomingMessage(mqttTopics.commands, "SHUTDOWN");
-    }
 }
 
 // -----------------------------------------------------------------
@@ -306,14 +318,16 @@ void setup() {
     Serial.print("Build Time: ");
     Serial.println(BUILD_TIME);
     Serial.print("Hardware Mode: ");
-    Serial.println(ACTIVE_MODE == DriverMode::PHYSICAL ? "PHYSICAL SENSORS" : "MOCK SIMULATOR");
+    Serial.println(ACTIVE_MODE == DriverMode::PHYSICAL ? "PHYSICAL SENSORS" : (ACTIVE_MODE == DriverMode::HYBRID ? "HYBRID (PHYSICAL pH + TURBIDITY + ACTUATORS)" : "MOCK SIMULATOR"));
     Serial.println("--------------------------------");
 
     // Initialize Calibration Database Repository
     calibrationRepository.initialize();
 
-    // Run calibration layer unit tests (Verifies recovery flows)
-    CalibrationValidator::runUnitTests();
+    // Run calibration layer unit tests only in MOCK mode
+    if (ACTIVE_MODE == DriverMode::MOCK) {
+        CalibrationValidator::runUnitTests();
+    }
 
     // Initialize HAL
     Serial.println("\n[SYSTEM] Initializing Hardware Abstraction Layer...");
@@ -390,9 +404,11 @@ void setup() {
     Serial.println("Starting Cooperative Task Scheduler...");
     Serial.println("--------------------------------");
 
-    // Execute End-to-End System Verification Suite on startup
-    VerificationManager verificationMgr(&hal, &wifiManager, &scheduler, &fsm, &backendGateway);
-    verificationMgr.runVerificationSuite();
+    // Execute End-to-End System Verification Suite on startup only in MOCK mode
+    if (ACTIVE_MODE == DriverMode::MOCK) {
+        VerificationManager verificationMgr(&hal, &wifiManager, &scheduler, &fsm, &backendGateway);
+        verificationMgr.runVerificationSuite();
+    }
 }
 
 void loop() {

@@ -1,0 +1,53 @@
+[WINDOW #01] N=100 | Raw ADC: Min= 128 Max= 193 Avg= 146.6 Med= 146.0 Std= 7.0 | Sat=0 | V_P34=0.258V | Est V_OUT=0.644V
+========================================
+PHASE T4 — DRY / AIR BASELINE PROTOCOL
+IMPORTANT: Ensure probe is COMPLETELY DRY and in air.
+Collecting 5 consecutive 100-sample windows...
+========================================
+[WINDOW #01] N=100 | Raw ADC: Min= 134 Max= 156 Avg= 145.6 Med= 145.0 Std= 4.2 | Sat=0 | V_P34=0.257V | Est V_OUT=0.644V
+[WINDOW #02] N=100 | Raw ADC: Min= 115 Max= 173 Avg= 145.7 Med= 145.0 Std= 6.6 | Sat=0 | V_P34=0.257V | Est V_OUT=0.643V
+[WINDOW #03] N=100 | Raw ADC: Min= 126 Max= 169 Avg= 145.9 Med= 145.0 Std= 4.4 | Sat=0 | V_P34=0.257V | Est V_OUT=0.643V
+[WINDOW #04] N=100 | Raw ADC: Min= 106 Max= 175 Avg= 145.6 Med= 145.0 Std= 5.8 | Sat=0 | V_P34=0.257V | Est V_OUT=0.643V
+[WINDOW #05] N=100 | Raw ADC: Min= 128 Max= 201 Avg= 146.1 Med= 144.5 Std= 7.1 | Sat=0 | V_P34=0.257V | Est V_OUT=0.643V
+----------------------------------------
+DRY BASELINE — NOT CALIBRATION
+Windows Collected    : 5 (500 total samples)
+Overall Mean Raw ADC : 145.82
+Overall Median Raw   : 144.90
+Overall Min / Max    : 106 / 201 (Span: 95)
+Pooled Standard Dev  : 5.74
+Saturation Count     : 0 (0.00%)
+Mean P34 Voltage     : 0.257 V
+Estimated Mean V_OUT : 0.643 V
+----------------------------------------
+DRY BASELINE STATUS    : PASS
+========================================
+[WINDOW #02] N=100 | Raw ADC: Min= 131 Max= 166 Avg= 146.5 Med= 145.0 Std= 5.5 | Sat=0 | V_P34=0.257V | Est V_OUT=0.642V
+[WINDOW #03] N=100 | Raw ADC: Min= 130 Max= 160 Avg= 146.6 Med= 146.0 Std= 4.6 | Sat=0 | V_P34=0.257V | Est V_OUT=0.642V
+[WINDOW #04] N=100 | Raw ADC: Min= 124 Max= 201 Avg= 146.3 Med= 145.0 Std= 7.7 | Sat=0 | V_P34=0.257V | Est V_OUT=0.643V
+[WINDOW #01] N=100 | Raw ADC: Min= 115 Max= 158 Avg= 146.0 Med= 145.0 Std= 5.7 | Sat=0 | V_P34=0.258V | Est V_OUT=0.644V
+========================================
+PHASE T5 — CLEAN WATER RESPONSE TEST
+IMPORTANT: Ensure probe is submerged in clean water.
+Collecting 5 consecutive 100-sample windows...
+========================================
+WARNING: Dry baseline has not been captured yet. Run 'd' first for accurate delta.
+[WINDOW #01] N=100 | Raw ADC: Min= 133 Max= 183 Avg= 146.1 Med= 145.0 Std= 5.4 | Sat=0 | V_P34=0.257V | Est V_OUT=0.642V
+[WINDOW #02] N=100 | Raw ADC: Min= 130 Max= 161 Avg= 145.8 Med= 145.0 Std= 4.4 | Sat=0 | V_P34=0.257V | Est V_OUT=0.643V
+[WINDOW #03] N=100 | Raw ADC: Min= 129 Max= 161 Avg= 146.7 Med= 145.0 Std= 6.2 | Sat=0 | V_P34=0.257V | Est V_OUT=0.644V
+[WINDOW #04] N=100 | Raw ADC: Min= 118 Max= 162 Avg= 145.5 Med= 145.0 Std= 7.1 | Sat=0 | V_P34=0.258V | Est V_OUT=0.645V
+[WINDOW #05] N=100 | Raw ADC: Min= 129 Max= 161 Avg= 145.4 Med= 145.0 Std= 5.0 | Sat=0 | V_P34=0.258V | Est V_OUT=0.644V
+----------------------------------------
+WATER RESPONSE SUMMARY — NOT CALIBRATION
+Windows Collected    : 5 (500 total samples)
+Water Mean Raw ADC   : 145.90
+Water Median Raw     : 145.00
+Water Min / Max      : 118 / 183 (Span: 65)
+Water Standard Dev   : 5.73
+Water Mean P34 Volt  : 0.257 V
+Water Est Mean V_OUT : 0.643 V
+RESULT: WATER RESPONSE MEASURED (Dry baseline unavailable for delta)
+========================================
+[WINDOW #02] N=100 | Raw ADC: Min= 134 Max= 165 Avg= 146.0 Med= 145.0 Std= 5.7 | Sat=0 | V_P34=0.258V | Est V_OUT=0.644V
+[WINDOW #03] N=100 | Raw ADC: Min= 130 Max= 160 Avg= 146.0 Med= 146.0 Std= 4.7 | Sat=0 | V_P34=0.257V | Est V_OUT=0.643V
+[WINDOW #04] N=100 | Raw ADC: Min= 118 Max= 157 Avg= 145.0 Med= 145.0 Std= 5.2 | Sat=0 | V_P34=0.257V | Est V_OUT=0.643V

@@ -77,6 +77,7 @@
     "pt_path": "models/cv/aquatic_bloom_mobilenetv3.pt",
     "onnx_path": null,
     "model_size_bytes": 6218731,
-    "model_size_mb": 5.93
+    "model_size_mb": 5.93,
+    "sha256": "19d84e0b1d27571296591434e02ec9331f14a49c75680f57c73333e7e53bb6bb"
   }
 }

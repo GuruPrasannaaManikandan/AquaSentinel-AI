@@ -13,6 +13,7 @@ struct MQTTDiagnostics {
     unsigned long publishCount;
     unsigned long subscribeCount;
     unsigned long droppedMessages;
+    unsigned long failureCount;
     
     // Session Statistics
     unsigned long brokerSessions;

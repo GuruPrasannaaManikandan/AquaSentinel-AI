@@ -1,0 +1,28 @@
+{
+  "sensor_type": "PH",
+  "is_calibrated": false,
+  "status": "NOT_CALIBRATED",
+  "calibration_date": null,
+  "calibration_method": "MULTI_POINT_PIECEWISE_LINEAR",
+  "points": [],
+  "coefficients": {
+    "slope_v_per_ph": null,
+    "intercept_v": null,
+    "neutral_voltage_v": null,
+    "slope_efficiency_percent": null
+  },
+  "validation_bounds": {
+    "min_valid_ph": 0.0,
+    "max_valid_ph": 14.0,
+    "freshwater_nominal": [
+      6.5,
+      8.5
+    ]
+  },
+  "uncalibrated_placeholder": {
+    "description": "Linear placeholder multiplier: pH = V_module * 3.5",
+    "slope": 3.5,
+    "intercept": 0.0,
+    "warning": "DO NOT PRESENT AS VALIDATED PH"
+  }
+}

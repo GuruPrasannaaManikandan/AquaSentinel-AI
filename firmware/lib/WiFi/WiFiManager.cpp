@@ -1,6 +1,13 @@
 #include "WiFiManager.h"
 #include <Arduino.h>
 
+#ifdef LOW
+#undef LOW
+#endif
+#ifdef HIGH
+#undef HIGH
+#endif
+
 WiFiManager::WiFiManager(IWiFiService* service, EventDispatcher* dispatcher, ICredentialsProvider* credentials, const WiFiConnectionPolicy& policy)
     : _service(service), _dispatcher(dispatcher), _credentials(credentials), _policy(policy),
       _retryManager(policy.getMaxRetryCount(), policy.getConnectionTimeout()),
