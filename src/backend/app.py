@@ -1,4 +1,5 @@
 import os
+import threading
 import json
 import datetime
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Query, Path, Body
@@ -6,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, FileResponse
 from typing import List, Dict, Any, Optional
 from src.cv.physical_camera_service import camera_service, CAPTURES_DIR, BASE_DIR
+from src.backend.laptop_location import get_laptop_location
 
 import numpy as np
 import pandas as pd
@@ -189,6 +191,32 @@ def get_health():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Health check failed: {e}")
 
+PHYSICAL_NODE_ID = "AQUA_FRESH_001"
+
+
+def device_location(device_id, profile):
+    """The physical node has no GPS: its location is the gateway laptop's (empty if unknown)."""
+    if device_id != PHYSICAL_NODE_ID:
+        return profile["location"]
+    loc = get_laptop_location()
+    if not loc["available"]:
+        return {}
+    out = {"latitude": loc["latitude"], "longitude": loc["longitude"]}
+    if loc.get("accuracy_m") is not None:
+        out["accuracy_m"] = float(loc["accuracy_m"])
+    return out
+
+
+# Warm the location cache in the background so the first dashboard poll isn't blocked.
+threading.Thread(target=get_laptop_location, daemon=True).start()
+
+
+@app.get("/api/location", tags=["Devices"])
+def get_gateway_location(refresh: bool = Query(False)):
+    """Gateway laptop location (Windows Location), cached for 10 minutes."""
+    return get_laptop_location(force=refresh)
+
+
 @app.get("/devices", response_model=List[DeviceInfoSchema], tags=["Devices"])
 def get_devices():
     """Lists registered virtual and physical aquatic monitoring devices."""
@@ -201,7 +229,7 @@ def get_devices():
             device_id=d_id,
             ecosystem_type=profile["ecosystem_type"],
             dataset_route=profile["dataset_route"],
-            location=profile["location"],
+            location=device_location(d_id, profile),
             enabled_sensors=profile["enabled_sensors"],
             firmware_version=fw,
             status=st
@@ -223,7 +251,7 @@ def get_device(device_id: str = Path(..., description="Device ID e.g. AQUA_FRESH
         device_id=device_id,
         ecosystem_type=profile["ecosystem_type"],
         dataset_route=profile["dataset_route"],
-        location=profile["location"],
+        location=device_location(device_id, profile),
         enabled_sensors=profile["enabled_sensors"],
         firmware_version=fw,
         status=st
@@ -616,8 +644,8 @@ def get_live_sensor_reading(device_id: str = Query("AQUA_FRESH_001")):
         "turbidity_raw": row.get("turbidity_raw"),
         "salinity_ppt": row.get("salinity_ppt"),
         "dissolved_oxygen_mg_l": row.get("dissolved_oxygen_mg_l"),
-        "latitude": row.get("latitude"),
-        "longitude": row.get("longitude"),
+        "latitude": None,
+        "longitude": None,
         "sensor_status": row.get("sensor_status"),
         "sensor_states": d.get("sensor_states") or {},
         "reasons": d.get("reasons") or {},
@@ -634,6 +662,13 @@ def get_live_sensor_reading(device_id: str = Query("AQUA_FRESH_001")):
         "mqtt": bool(row.get("mqtt_connected")),
         "detail_matches_row": same_packet,
     }
+    if device_id == PHYSICAL_NODE_ID:
+        loc = get_laptop_location()
+        out["latitude"], out["longitude"] = loc["latitude"], loc["longitude"]
+        out["location_accuracy_m"] = loc.get("accuracy_m")
+        out["location_source"] = loc.get("source")
+        out["location_label"] = loc.get("label")
+        out["location_error"] = loc.get("error")
     if out["turbidity_ntu"] is None and (out["sensor_states"].get("turbidity") == "VALID"):
         # Smooth before converting: the curve is steep near clear water, so raw noise would
         # otherwise swing the estimate by hundreds of NTU.

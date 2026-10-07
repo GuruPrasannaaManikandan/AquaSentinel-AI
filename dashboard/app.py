@@ -203,8 +203,12 @@ def live_sensor_panel():
     sensor_card(d3, "Salinity / TDS", live, "salinity")
 
     e1, e2, e3 = st.columns(3)
-    e1.metric("GPS", "N/A")
-    e1.caption(f"{STATE_LABEL['UNAVAILABLE']} - " + ((live.get("reasons") or {}).get("gps") or "no GPS module installed"))
+    if live.get("latitude") is not None and live.get("longitude") is not None:
+        e1.metric("Location (no GPS module)", f"{live['latitude']:.5f}, {live['longitude']:.5f}")
+        e1.caption(live.get("location_label") or "Location: laptop")
+    else:
+        e1.metric("Location (no GPS module)", "N/A")
+        e1.caption(f"{STATE_LABEL['UNAVAILABLE']} - {live.get('location_error') or 'laptop location unavailable'}")
     e2.metric("Pump", "N/A")
     e2.caption(f"{STATE_LABEL['UNAVAILABLE']} - " + ((live.get("reasons") or {}).get("pump") or "no pump load connected (relay switching only)"))
     e3.metric("Packet #", live.get("sequence_number", "N/A"), help=f"{live.get('timestamp')} - age {live.get('age_sec')} s - fw {live.get('fw')} - {live.get('port')}")
@@ -469,11 +473,14 @@ with tab1:
 
         # Map display
         st.subheader("📍 Deployment Location")
-        if telemetry.get("latitude") is not None and telemetry.get("longitude") is not None:
-            map_df = pd.DataFrame([{"lat": telemetry["latitude"], "lon": telemetry["longitude"]}])
-            st.map(map_df, zoom=10)
+        _loc = fetch_json("/api/location") or {}
+        if _loc.get("available"):
+            map_df = pd.DataFrame([{"lat": _loc["latitude"], "lon": _loc["longitude"]}])
+            st.map(map_df, zoom=14)
+            st.caption(f"{_loc.get('label')} - {_loc['latitude']:.5f}, {_loc['longitude']:.5f}. "
+                       "The node has no GPS module, so the gateway laptop's location is shown.")
         else:
-            st.info("📍 GPS Module: Not Equipped / Inactive (Hardware Contract: GPS NOT AVAILABLE)")
+            st.info(f"📍 Location: N/A - {_loc.get('error') or 'laptop location unavailable'} (no GPS module on the node)")
     else:
         st.info("No telemetry logs received yet. Start the simulation to poll data.")
 
