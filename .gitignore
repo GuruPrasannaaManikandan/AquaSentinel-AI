@@ -1,2 +1,6 @@
 data/live_sensor.json
 data/live_sensor.json.tmp
+
+# Local-only screenshots (may show the laptop location)
+logs/*.jpg
+logs/*_restart.*.log
