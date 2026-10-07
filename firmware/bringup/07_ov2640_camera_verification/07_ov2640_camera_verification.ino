@@ -51,6 +51,7 @@
 WebServer server(80);
 bool cameraInitialized = false;
 bool psramDetected = false;
+int fbCountInUse = 1;  // frame buffers the driver was initialised with
 bool nativeJpegMode = false;
 uint32_t sensorPID = 0;
 String sensorModelName = "UNKNOWN";
@@ -68,6 +69,14 @@ struct VerifiedFrame {
 VerifiedFrame acquireJpegFrame() {
     VerifiedFrame vf = {NULL, 0, 0, 0, false, NULL};
     if (!cameraInitialized) return vf;
+
+    // With CAMERA_GRAB_WHEN_EMPTY the driver fills its buffers right after the
+    // previous capture and holds them, so the first fb_get returns an old scene.
+    // Drain every pre-filled buffer so the frame we return is exposed now.
+    for (int i = 0; i < fbCountInUse; i++) {
+        camera_fb_t* stale = esp_camera_fb_get();
+        if (stale) esp_camera_fb_return(stale);
+    }
 
     camera_fb_t* fb = esp_camera_fb_get();
     if (!fb || fb->buf == NULL || fb->len == 0) {
@@ -216,6 +225,7 @@ bool initCamera(framesize_t targetSize = FRAMESIZE_QVGA) {
     if (err == ESP_OK) {
         nativeJpegMode = true;
         cameraInitialized = true;
+        fbCountInUse = config.fb_count;
         Serial.println("CAMERA INITIALIZATION: PASS (Native JPEG Mode)");
     } else if (err == 0x0106) { // ESP_ERR_NOT_SUPPORTED
         Serial.println("[DIAGNOSTIC] Native JPEG rejected by driver (0x0106).");
@@ -231,6 +241,7 @@ bool initCamera(framesize_t targetSize = FRAMESIZE_QVGA) {
         if (err == ESP_OK) {
             nativeJpegMode = false;
             cameraInitialized = true;
+            fbCountInUse = config.fb_count;
             Serial.println("CAMERA INITIALIZATION: PASS (RGB565 Pipeline with Auto-JPEG Conversion)");
         } else {
             Serial.printf("CAMERA INITIALIZATION: FAIL on RGB565 (Error Code: 0x%04x)\n", err);

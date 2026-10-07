@@ -53,6 +53,8 @@ st.markdown("""
     .badge-critical { background: #C62828; color: white; }
     .badge-anomaly { background: #6A1B9A; color: white; }
     .badge-fault { background: #424242; color: white; }
+    /* smaller metric values so state words such as UNCALIBRATED fit; long text still ellipsizes normally */
+    [data-testid="stMetricValue"] { font-size: 1.35rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -92,49 +94,109 @@ st.title("🌊 IoT Aquatic Monitoring & Artificial Immune System Gateway")
 st.markdown("**Version 7.0 Advanced Multimodal Intelligence & Evidential Reasoning Platform**")
 
 # ----------------- LIVE PHYSICAL SENSOR PANEL -----------------
-PH_STATUS_TEXT = {
-    "PH_CALIBRATED": "Calibrated (pH 7 point set)",
-    "PH_ESTIMATE": "Estimate: not calibrated yet (send PH_CAL7 with the BNC shorted)",
-    "ADC_SATURATED": "Wiring fault: pH pin reads full scale (check the 33k/22k divider and Po wire)",
-    "NO_SIGNAL": "No signal: pH module output not connected",
-}
-TURB_STATUS_TEXT = {
-    "UNVERIFIED_UNCALIBRATED": "Live voltage (NTU is an estimate)",
-    "ADC_SATURATED": "Wiring fault: turbidity pin reads full scale",
-    "NO_SIGNAL": "No signal: turbidity OUT not connected or module unpowered",
-}
+# ---- Sensor state semantics (one vocabulary everywhere) ----
+#   VALID        calibrated / usable reading
+#   UNCALIBRATED hardware present and answering, but no trustworthy calibration yet
+#   FAULT        hardware present but malfunctioning / invalid data
+#   UNAVAILABLE  hardware is not physically present (NOT a fault)
+STATE_LABEL = {"VALID": "🟢 VALID", "UNCALIBRATED": "🟡 UNCALIBRATED", "FAULT": "🔴 FAULT", "UNAVAILABLE": "⚪ UNAVAILABLE"}
+PHYSICAL_DEVICE_ID = "AQUA_FRESH_001"
 
 
 def _fmt(value, fmt):
     return fmt.format(value) if isinstance(value, (int, float)) else "N/A"
 
 
+def fetch_live(device_id=PHYSICAL_DEVICE_ID):
+    """The ONE authoritative latest-live telemetry object (backend: newest EventStore row + same-packet detail)."""
+    return fetch_json(f"/api/sensors/live?device_id={device_id}", timeout=2.0)
+
+
+def sensor_display(live, name):
+    """(value_text, state, note) for one sensor, from the single live object. Never turns N/A into 0."""
+    states = live.get("sensor_states") or {}
+    reasons = live.get("reasons") or {}
+    st_ = states.get(name)
+    if name == "ph":
+        ph = live.get("ph")
+        if st_ == "VALID" and ph is not None:
+            return f"{ph:.2f}", "VALID", "calibrated pH"
+        if st_ == "UNCALIBRATED":
+            est = live.get("ph_estimate")
+            return "UNCALIBRATED", "UNCALIBRATED", (
+                f"module output ~{_fmt(live.get('ph_voltage'), '{:.2f} V')}; default-coefficient estimate "
+                f"{_fmt(est, '{:.2f}')} is NOT a measurement")
+        if st_ == "FAULT":
+            return "FAULT", "FAULT", "pH channel invalid (saturated / no signal / out of 0-14)"
+        return (f"{ph:.2f}" if ph is not None else "N/A"), st_, "state unknown (no matching detail packet)"
+    if name == "turbidity":
+        raw = live.get("turbidity_raw")
+        if raw is not None and st_ == "VALID":
+            return f"{raw:.0f} raw", "VALID", f"relative: {_fmt(live.get('turbidity_rel_clear_pct'), '{:.0f}')}% of the stored clear-water reference (raw {_fmt(live.get('turbidity_clear_ref_raw'), '{:.0f}')}); NOT NTU"
+        if raw is not None:
+            return f"{raw:.0f} raw", st_ or "UNCALIBRATED", "raw ADC count, not volts/NTU; no clear-water reference stored (higher = clearer)"
+        if st_ == "FAULT" or live.get("sensor_status") == "FAULT":
+            return "FAULT", "FAULT", f"no usable signal (ADC raw {_fmt(live.get('turbidity_adc_raw'), '{:.0f}')})"
+        return "N/A", st_, "no reading"
+    if name == "temperature":
+        t = live.get("temperature_c")
+        if t is not None:
+            return f"{t:.1f} °C", "VALID", "DS18B20"
+        if st_ in (None, "UNAVAILABLE"):
+            return "N/A", "UNAVAILABLE", reasons.get("temperature") or "DS18B20 NOT CONNECTED"
+        return "N/A", st_, "DS18B20 not responding"
+    if name == "dissolved_oxygen":
+        v = live.get("dissolved_oxygen_mg_l")
+        return (f"{v:.2f}" if v is not None else "N/A"), ("VALID" if v is not None else "UNAVAILABLE"), reasons.get("dissolved_oxygen") or "no DO probe installed"
+    if name == "salinity":
+        v = live.get("salinity_ppt")
+        return (f"{v:.2f}" if v is not None else "N/A"), ("VALID" if v is not None else "UNAVAILABLE"), reasons.get("salinity") or "no salinity/TDS probe installed"
+    return "N/A", "UNAVAILABLE", ""
+
+
+def sensor_card(col, title, live, name):
+    value, state, note = sensor_display(live, name)
+    col.metric(title, value)
+    col.caption(f"{STATE_LABEL.get(state, state or 'UNKNOWN')} - {note}" if note else STATE_LABEL.get(state, state or "UNKNOWN"))
+
+
 @st.fragment(run_every=2)
 def live_sensor_panel():
     st.subheader("🔴 Live Hardware Sensors (ESP32)")
-    live = fetch_json("/api/sensors/live", timeout=2.0)
+    live = fetch_live()
     if not live or not live.get("available"):
         reason = (live or {}).get("reason", "Backend not reachable.")
         st.warning(f"No live reading. {reason}")
         return
     if live.get("stale"):
         st.error(f"Last reading is {live.get('age_sec')} s old. Is the sensor ESP32 plugged in and the bridge running?")
+    if live.get("actuator_test") not in (None, "OFF"):
+        st.warning(f"🧪 **SIMULATION / ACTUATOR TEST - mode {live['actuator_test']}.** LEDs/buzzer are being driven for a demo. "
+                   "Sensor readings below are real and are NOT altered.")
 
-    c1, c2, c3, c4 = st.columns(4)
-    turb_v = live.get("turbidity_voltage")
-    ntu = live.get("turbidity_ntu_est")
-    c1.metric("Turbidity (sensor voltage)", _fmt(turb_v, "{:.3f} V"), help="Higher voltage = clearer water")
-    c2.metric("Turbidity (estimated NTU)", _fmt(ntu, "{:.0f} NTU"),
-              help="DFRobot curve; send TURB_CLEAR once with the probe in clear water to reference it")
-    c3.metric("Water pH", _fmt(live.get("ph"), "{:.2f}"))
-    c4.metric("Reading #", live.get("sequence_number", "N/A"), help=f"Port {live.get('port')}, age {live.get('age_sec')} s")
+    c1, c2, c3 = st.columns(3)
+    sensor_card(c1, "Turbidity (raw ADC)", live, "turbidity")
+    sensor_card(c2, "Water pH", live, "ph")
+    sensor_card(c3, "Temperature (DS18B20)", live, "temperature")
 
-    t_status = live.get("turbidity_status", "")
-    p_status = live.get("ph_status", "")
-    st.caption(f"Turbidity: {TURB_STATUS_TEXT.get(t_status, t_status)}"
-               f"{'' if live.get('turbidity_clear_ref') else ' · clear-water reference not set'} · "
-               f"raw ADC {live.get('turbidity_raw', 'N/A')}")
-    st.caption(f"pH: {PH_STATUS_TEXT.get(p_status, p_status)} · module voltage {_fmt(live.get('ph_voltage'), '{:.3f} V')} · raw ADC {live.get('ph_raw', 'N/A')}")
+    d1, d2, d3 = st.columns(3)
+    sensor_card(d1, "Dissolved Oxygen", live, "dissolved_oxygen")
+    sensor_card(d2, "Salinity / TDS", live, "salinity")
+    d3.metric("GPS", "N/A")
+    d3.caption(f"{STATE_LABEL['UNAVAILABLE']} - " + ((live.get("reasons") or {}).get("gps") or "no GPS module installed"))
+
+    e1, e2, e3 = st.columns(3)
+    e1.metric("Pump", "N/A")
+    e1.caption(f"{STATE_LABEL['UNAVAILABLE']} - " + ((live.get("reasons") or {}).get("pump") or "no pump load connected (relay switching only)"))
+    e2.metric("Packet #", live.get("sequence_number", "N/A"), help=f"{live.get('timestamp')} - age {live.get('age_sec')} s - fw {live.get('fw')} - {live.get('port')}")
+    e2.caption(f"updated {live.get('timestamp')}")
+    e3.metric("Firmware", live.get("fw") or "N/A")
+    e3.caption("reported by the board")
+    st.caption(f"Source: {live.get('source')}")
+    if live.get("device_log"):
+        with st.expander("ESP32 replies (calibration / actuator-test commands)"):
+            for item in reversed(live["device_log"]):
+                st.code(item.get("line", ""), language=None)
 
 
 live_sensor_panel()
@@ -219,6 +281,8 @@ if selected_cmd == "SET_SAMPLING_INTERVAL":
     cmd_payload = {"interval": sec}
 
 if st.sidebar.button("📤 Send Command Override", use_container_width=True):
+    _before = fetch_live(selected_id) or {}
+    before_ts, before_seq = _before.get("timestamp"), _before.get("sequence_number")
     with st.sidebar.status(f"⚡ Processing {selected_cmd}...", expanded=True) as cmd_status:
         cmd_status.write(f"1. 📤 Sending `{selected_cmd}` to FastAPI `/devices/{selected_id}/command`...")
         import time
@@ -227,9 +291,18 @@ if st.sidebar.button("📤 Send Command Override", use_container_width=True):
         res = fetch_json(f"/devices/{selected_id}/command", "POST", {"command": selected_cmd, "payload": cmd_payload})
         if res and res.get("status") in ["SUCCESS", "COMMAND_COMPLETED", "EXECUTED", "OK"]:
             if selected_cmd == "REQUEST_READING":
-                cmd_status.write("3. ⏳ Waiting for fresh telemetry from physical ESP32...")
-                time.sleep(1.0)
-                cmd_status.write("4. 📥 Fresh physical sensor reading received and stored in EventStore!")
+                cmd_status.write("3. ⏳ Waiting for a NEW telemetry packet from the physical ESP32...")
+                fresh = None
+                for _ in range(16):
+                    time.sleep(0.5)
+                    now_live = fetch_live(selected_id) or {}
+                    if now_live.get("available") and now_live.get("timestamp") != before_ts:
+                        fresh = now_live
+                        break
+                if fresh:
+                    cmd_status.write(f"4. 📥 New packet #{fresh.get('sequence_number')} at {fresh.get('timestamp')} stored in EventStore (previous: #{before_seq} at {before_ts}).")
+                else:
+                    cmd_status.write("4. ⚠️ No new packet within 8 s (is the bridge running and the ESP32 plugged in?). Not claiming success.")
             elif selected_cmd == "ACTIVATE_BUZZER":
                 cmd_status.write("3. 🔊 Buzzer activated (GPIO14 HIGH).")
             elif selected_cmd == "DEACTIVATE_BUZZER":
@@ -253,6 +326,34 @@ if st.sidebar.button("📤 Send Command Override", use_container_width=True):
             err = res.get("detail") if isinstance(res, dict) else st.session_state.get("last_api_error", "Unknown error")
             cmd_status.update(label=f"❌ {selected_cmd} Failed", state="error", expanded=True)
             st.sidebar.error(f"Command failed: {err}")
+
+st.sidebar.divider()
+st.sidebar.header("🧪 Actuator Demo - SIMULATION / ACTUATOR TEST")
+st.sidebar.caption("Drives the LEDs and buzzer only (never the relay). Sensor values are NOT altered. Auto-ends after 60 s.")
+_ta, _tb = st.sidebar.columns(2)
+_tc, _td = st.sidebar.columns(2)
+for _col, _mode, _label in ((_ta, "NORMAL", "🟢 NORMAL"), (_tb, "WARNING", "🟡 WARNING"), (_tc, "CRITICAL", "🔴 CRITICAL"), (_td, "OFF", "⏹ END TEST")):
+    if _col.button(_label, key=f"act_{_mode}", use_container_width=True):
+        _r = fetch_json(f"/devices/{PHYSICAL_DEVICE_ID}/command", "POST", {"command": "ACTUATOR_TEST", "payload": {"mode": _mode}})
+        if _r:
+            st.sidebar.info(f"ACTUATOR_TEST {_mode} dispatched to the ESP32 (simulation). Confirmation appears under 'ESP32 replies'.")
+        else:
+            st.sidebar.error(f"Not sent: {st.session_state.get('last_api_error')}")
+
+st.sidebar.header("🎯 Calibration (physical probes)")
+st.sidebar.caption("The ESP32 refuses to store a reference if the signal is not repeatable (coefficient of variation > 5%), so a noisy probe can never become 'VALID'.")
+_cal = st.sidebar.selectbox("Procedure", [
+    "TURB_CLEAR - store clear-water reference (probe in clear water)",
+    "TURB_RESET - clear the turbidity reference",
+    "PH_CAL7 - pH 7 point (pH 7 buffer, or BNC centre shorted to shield)",
+    "PH_RESET - reset pH calibration"])
+if st.sidebar.button("Run calibration command", use_container_width=True):
+    _cmd = _cal.split(" ")[0]
+    _r = fetch_json(f"/devices/{PHYSICAL_DEVICE_ID}/command", "POST", {"command": _cmd, "payload": {}})
+    if _r:
+        st.sidebar.info(f"{_cmd} dispatched. Read the ESP32's answer under 'ESP32 replies' in the live panel.")
+    else:
+        st.sidebar.error(f"Not sent: {st.session_state.get('last_api_error')}")
 
 # Load latest values and intelligence
 latest_data = fetch_json(f"/devices/{selected_id}/latest") or {"telemetry": None, "decision": None}
@@ -296,7 +397,9 @@ with tab1:
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Ecosystem Type", dev_details["ecosystem_type"])
         c2.metric("Dataset Route", dev_details["dataset_route"].upper())
-        c3.metric("Firmware Version", dev_details["firmware_version"])
+        _fw_live = (fetch_live(selected_id) or {}).get("fw")
+        c3.metric("Firmware Version", _fw_live or dev_details["firmware_version"],
+                  help="Reported by the board in its latest packet" if _fw_live else "From the device registry (no live packet)")
         
         fsm_st = dev_details["status"]
         if fsm_st in ["BOOT", "INITIALIZING", "CONNECTING", "RECOVERING"]:
@@ -317,26 +420,18 @@ with tab1:
         trig_str = f" | Last Trigger: `{cmd_trig}`" if cmd_trig else ""
         st.info(f"📡 **Live Telemetry Stream Active** | Last Ingest: `{ts_val}` | Packet Sequence: `#{seq_val}` | Source: `{orig_val}`{trig_str}")
 
+        # Same authoritative live object as the top cards (never a second data source).
+        live_obj = fetch_live(selected_id) or {}
         sc1, sc2, sc3, sc4, sc5 = st.columns(5)
-        with sc1:
-            val = telemetry.get("temperature_c")
-            st.metric("Temperature (°C)", f"{val:.2f}" if val is not None else "N/A")
-        with sc2:
-            val = telemetry.get("salinity_ppt")
-            st.metric("Salinity / TDS (ppt)", f"{val:.2f}" if val is not None else "N/A")
-        with sc3:
-            val = telemetry.get("ph")
-            # Firmware 3.9+ converts pH on the board; no remapping here.
-            disp_val = f"{float(val):.2f}" if val is not None else "N/A"
-
-            st.metric("Water pH", disp_val)
-        with sc4:
-            turb_v = telemetry.get("turbidity_voltage", telemetry.get("turbidity_ntu"))
-            turb_disp = f"{turb_v:.2f} V" if turb_v is not None else "N/A"
-            st.metric("Turbidity", turb_disp)
-        with sc5:
-            val = telemetry.get("dissolved_oxygen_mg_l")
-            st.metric("Dissolved Oxygen (mg/L)", f"{val:.2f}" if val is not None else "N/A")
+        if live_obj.get("available"):
+            sensor_card(sc1, "Temperature", live_obj, "temperature")
+            sensor_card(sc2, "Salinity / TDS", live_obj, "salinity")
+            sensor_card(sc3, "Water pH", live_obj, "ph")
+            sensor_card(sc4, "Turbidity", live_obj, "turbidity")
+            sensor_card(sc5, "Dissolved Oxygen", live_obj, "dissolved_oxygen")
+        else:
+            for col, label in ((sc1, "Temperature"), (sc2, "Salinity / TDS"), (sc3, "Water pH"), (sc4, "Turbidity"), (sc5, "Dissolved Oxygen")):
+                col.metric(label, "N/A")
 
         st.divider()
 
@@ -431,24 +526,27 @@ with tab2:
 
         # Metadata Status Card
         card_col1, card_col2 = st.columns(2)
-        card_col1.info(f"**Camera:** `READY` (ESP32-CAM)\n\n**Sensor:** `GC2145` (USB serial)\n\n**Source:** `PHYSICAL ESP32-CAM`")
+        _cam_live = fetch_json("/api/camera/status") or {}
+        _cam_state = _cam_live.get("status", "UNKNOWN")
+        _cam_box = card_col1.info if _cam_state not in ("ERROR", "OFFLINE", "UNKNOWN") else card_col1.error
+        _cam_err = f"\n\n**Last error:** {_cam_live.get('last_error')}" if _cam_live.get("last_error") else ""
+        _cam_box(f"**Camera:** `{_cam_state}` (ESP32-CAM)\n\n**Sensor:** `GC2145` (USB serial)\n\n**Source:** `PHYSICAL ESP32-CAM`{_cam_err}")
         card_col2.info(f"**Status:** `{st.session_state.get('camera_status', 'READY')}`\n\n**Frame:** `#{st.session_state.get('camera_frame_sequence', 'N/A')}`\n\n**Last Capture:** `{st.session_state.get('camera_last_capture', 'None')}`")
 
         # Display the captured physical photo
         img_rel_path = st.session_state.get("camera_image_path")
         full_img_path = os.path.join(BASE_DIR, img_rel_path) if img_rel_path else None
-        legacy_docs_img = os.path.join(BASE_DIR, "docs", "LIVE_ESP32_CAM_GC2145_FRAME.jpg")
-
-        if full_img_path and os.path.exists(full_img_path):
+        # Only ever show the exact file returned by the latest successful capture;
+        # never an older photo or a fixed legacy path.
+        if st.session_state.get("camera_status") == "ERROR":
+            st.warning("No photo shown: the latest capture failed. Click '📸 CAPTURE PHOTO' to try again.")
+        elif full_img_path and os.path.exists(full_img_path):
+            with open(full_img_path, "rb") as _img_f:
+                _img_bytes = _img_f.read()
             st.image(
-                full_img_path,
-                caption=f"📷 Physical ESP32-CAM Photo (GC2145 | Frame #{st.session_state.get('camera_frame_sequence')} | Captured: {st.session_state.get('camera_last_capture')})",
-                use_container_width=True
-            )
-        elif os.path.exists(legacy_docs_img):
-            st.image(
-                legacy_docs_img,
-                caption="📷 Old photo from an earlier session (not live). Click CAPTURE PHOTO for a fresh one.",
+                _img_bytes,
+                caption=(f"📷 Physical ESP32-CAM Photo | Frame #{st.session_state.get('camera_frame_sequence')} | "
+                         f"Captured: {st.session_state.get('camera_last_capture')} | {os.path.basename(full_img_path)}"),
                 use_container_width=True
             )
         else:
