@@ -2,10 +2,13 @@
 """
 AquaSentinel-AI: Live Hardware Serial-to-MQTT Gateway Bridge Service
 ====================================================================
-Interfaces directly with the physical Main ESP32 on COM3 @ 115200 baud
-without resetting the board (DTR=False, RTS=False).
-Captures real physical sensor telemetry (pH, Turbidity voltage, health status),
-publishes live packets to MQTT (test.mosquitto.org:1883 on aquatic/AQUA_FRESH_001/telemetry),
+Interfaces directly with the physical Main ESP32 @ 115200 baud without
+resetting the board (DTR=False, RTS=False). The COM port is auto-detected
+(src/utils/serial_ports.py); override with --port COM7 or AQUA_MAIN_PORT=COM7.
+Parses the firmware's "[TELEMETRY-JSON] {...}" line (pH, pH status, turbidity
+voltage + NTU estimate), writes the latest reading to data/live_sensor.json for
+the dashboard, and publishes live packets to MQTT (AQUA_MQTT_HOST, default
+test.mosquitto.org:1883, topic aquatic/AQUA_FRESH_001/telemetry; --no-mqtt to skip),
 subscribes to commands (aquatic/+/command) to handle operational overrides:
   - REQUEST_READING: immediate physical sensor acquisition
   - SET_SAMPLING_INTERVAL: reconfigures scheduler telemetry rate
@@ -21,7 +24,6 @@ import os
 import json
 import time
 import datetime
-import re
 import threading
 import paho.mqtt.client as mqtt
 
@@ -32,9 +34,11 @@ if BASE_DIR not in sys.path:
 
 from src.iot.gateway import Gateway
 from src.iot.event_store import EventStore
+from src.utils import serial_ports
 
-BROKER = "test.mosquitto.org"
-PORT = 1883
+BROKER = os.environ.get("AQUA_MQTT_HOST", "test.mosquitto.org")
+PORT = int(os.environ.get("AQUA_MQTT_PORT", "1883"))
+LIVE_SENSOR_PATH = os.path.join(BASE_DIR, "data", "live_sensor.json")
 TOPICS = [
     "aquatic/+/telemetry",
     "aquatic/+/status",
@@ -55,10 +59,12 @@ class LiveGatewayBridge:
         self.mqtt_connected = False
         self.sampling_interval = 5.0  # seconds between periodic telemetry packets
         
-        # Physical sensor state (from COM3 ESP32)
-        self.last_ph = 28.87
-        self.last_turb = 0.40
-        self.last_status = "OK"
+        # Physical sensor state (from the main ESP32). None until the board reports.
+        self.last_ph = None
+        self.last_turb = None
+        self.last_status = "NO_DATA"
+        self.last_reading = None  # full parsed [TELEMETRY-JSON] dict
+        self.serial_port = None
         self.ser = None
         self.lock = threading.Lock()
 
@@ -186,9 +192,9 @@ class LiveGatewayBridge:
                 "longitude": None
             },
             "sensors": {
-                "ph": round(ph_val, 2),
-                "turbidity_ntu": round(turb_val, 3),
-                "turbidity_voltage": round(turb_val, 3),
+                "ph": round(ph_val, 2) if ph_val is not None else None,
+                "turbidity_ntu": round(turb_val, 3) if turb_val is not None else None,
+                "turbidity_voltage": round(turb_val, 3) if turb_val is not None else None,
                 "temperature_c": None,
                 "salinity_ppt": None,
                 "dissolved_oxygen_mg_l": None,
@@ -199,64 +205,37 @@ class LiveGatewayBridge:
             },
             "device_health": {
                 "wifi_connected": False,
-                "mqtt_connected": True,
+                "mqtt_connected": bool(self.mqtt_connected),
                 "sensor_status": status_val
             }
+        }
+        reading = self.last_reading or {}
+        payload["sensor_detail"] = {
+            "ph_status": reading.get("ph_status"),
+            "ph_voltage": reading.get("ph_voltage"),
+            "turbidity_status": reading.get("turbidity_status"),
+            "turbidity_ntu_est": reading.get("turbidity_ntu_est"),
         }
         if cmd_origin:
             payload["command_triggered"] = cmd_origin
         return payload
 
     def trigger_immediate_reading(self, device_id="AQUA_FRESH_001", command_origin="REQUEST_READING"):
-        """Performs immediate physical sensor acquisition and publishes a fresh telemetry packet."""
-        with self.lock:
-            self.seq_num += 1
-            current_seq = self.seq_num
-            ph_val = self.last_ph
-            turb_val = self.last_turb
-            status_val = self.last_status
-
-        ts_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        print(f"\n[LIVE-GATEWAY] ⚡ IMMEDIATE SENSOR ACQUISITION EXECUTING for {device_id} ({command_origin})", flush=True)
-
-        # Send command to ESP32 over serial if connected
+        """Asks the physical ESP32 for a reading now; its reply arrives as a normal [TELEMETRY-JSON] line."""
+        print(f"\n[LIVE-GATEWAY] ⚡ IMMEDIATE SENSOR ACQUISITION requested for {device_id} ({command_origin})", flush=True)
         if self.ser and self.ser.is_open:
             try:
                 self.ser.write(b"REQUEST_READING\n")
-                print("[LIVE-GATEWAY] Dispatched REQUEST_READING to physical ESP32 on COM3", flush=True)
+                print(f"[LIVE-GATEWAY] Dispatched REQUEST_READING to physical ESP32 on {self.serial_port}", flush=True)
             except Exception as e:
-                print(f"[LIVE-GATEWAY] Serial dispatch note: {e}", flush=True)
-
-        payload = self._build_telemetry_payload(current_seq, ts_iso, ph_val, turb_val, status_val, device_id, cmd_origin=command_origin)
-
-        # 1. Publish to live MQTT broker
-        if self.mqtt_client and self.mqtt_connected:
-            try:
-                self.mqtt_client.publish(
-                    f"aquatic/{device_id}/telemetry",
-                    json.dumps(payload),
-                    qos=0
-                )
-                print(f"[LIVE-GATEWAY] 📡 Published immediate telemetry to MQTT: aquatic/{device_id}/telemetry (Seq #{current_seq})", flush=True)
-            except Exception as e:
-                print(f"[LIVE-GATEWAY] MQTT publish error: {e}", flush=True)
-
-        # 2. Ingest through Gateway and persist to EventStore
-        self.process_payload(f"aquatic/{device_id}/telemetry", payload)
-        print(f"[LIVE-GATEWAY] ✅ Fresh telemetry packet stored & routed through backend (Seq #{current_seq})", flush=True)
+                print(f"[LIVE-GATEWAY] Serial dispatch error: {e}", flush=True)
+        else:
+            print("[LIVE-GATEWAY] Sensor ESP32 not connected; no reading taken.", flush=True)
 
     def process_payload(self, topic, payload):
         self.packet_count += 1
         self.last_packet = payload
         dev_id = payload.get("device_id", "UNKNOWN")
-        seq = payload.get("sequence_number", 0)
-        sensors = payload.get("sensors", {})
-        ph = sensors.get("ph")
-        turb = sensors.get("turbidity_voltage", sensors.get("turbidity_ntu"))
-        ts = payload.get("timestamp")
-
-        print(f"\n[LIVE-GATEWAY] 📨 Telemetry #{self.packet_count} received | Dev: {dev_id} | Seq: {seq} | TS: {ts}", flush=True)
-        print(f"               pH: {ph} | Turbidity: {turb} V | Temp: {sensors.get('temperature_c')}", flush=True)
 
         # Route through Central Gateway pipeline
         try:
@@ -268,116 +247,97 @@ class LiveGatewayBridge:
         except Exception as e:
             print(f"[LIVE-GATEWAY] Error processing in gateway: {e}", flush=True)
 
-    def start_serial_bridge(self, port="COM3", baud=115200):
-        """Monitors COM3 without toggling DTR/RTS (preserves board state)."""
-        import serial
+    def write_live_sensor_file(self, reading):
+        """Atomically writes the latest physical reading for the backend /api/sensors/live."""
+        try:
+            os.makedirs(os.path.dirname(LIVE_SENSOR_PATH), exist_ok=True)
+            tmp = LIVE_SENSOR_PATH + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(reading, f)
+            os.replace(tmp, LIVE_SENSOR_PATH)
+        except Exception as e:
+            print(f"[SERIAL-BRIDGE] Could not write {LIVE_SENSOR_PATH}: {e}", flush=True)
+
+    def handle_reading(self, reading):
+        """Stores one parsed [TELEMETRY-JSON] reading, publishes it and routes it to the gateway."""
+        ts_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        reading["received_at"] = ts_iso
+        reading["port"] = self.serial_port
+        with self.lock:
+            self.last_reading = reading
+            self.last_ph = reading.get("ph")
+            self.last_turb = reading.get("turbidity_voltage")
+            self.last_status = reading.get("status", "OK")
+            self.seq_num += 1
+            cur_seq = self.seq_num
+        reading["sequence_number"] = cur_seq
+        self.write_live_sensor_file(reading)
+
+        print(f"[SERIAL-BRIDGE] pH={reading.get('ph')} ({reading.get('ph_status')}) | "
+              f"turbidity={reading.get('turbidity_voltage')} V, ~{reading.get('turbidity_ntu_est')} NTU "
+              f"({reading.get('turbidity_status')})", flush=True)
+
+        trigger = reading.get("trigger")
+        payload = self._build_telemetry_payload(cur_seq, ts_iso, self.last_ph, self.last_turb, self.last_status,
+                                                cmd_origin=trigger if trigger and trigger != "PERIODIC" else None)
+        if self.mqtt_client and self.mqtt_connected:
+            try:
+                self.mqtt_client.publish("aquatic/AQUA_FRESH_001/telemetry", json.dumps(payload), qos=0)
+            except Exception as e:
+                print(f"[SERIAL-BRIDGE] MQTT publish error: {e}", flush=True)
+        self.process_payload("aquatic/AQUA_FRESH_001/telemetry", payload)
+
+    def start_serial_bridge(self, port=None, baud=115200):
+        """Reads the main ESP32 without toggling DTR/RTS (preserves board state)."""
+        json_marker = "[TELEMETRY-JSON]"
 
         def reader():
-            print(f"[COM3-BRIDGE] Opening {port} at {baud} baud (DTR=False, RTS=False)...", flush=True)
             ser = None
-            last_emit_time = 0
-
-            pattern_hal = re.compile(r"\[HAL-ALL\]\s+ph=([0-9.]+)\s+turb=([0-9.]+)\s+status=([A-Za-z0-9_]+)")
-            pattern_turb = re.compile(r"\[TURBIDITY-DRIVER\]\s+GPIO34\s+rawAdc=\d+\s+vadc=[0-9.]+\s+vout=([0-9.]+)")
-            pattern_ph = re.compile(r"\[PH-DRIVER\]\s+GPIO32\s+rawAdc=\d+\s+vadc=[0-9.]+\s+vmodule=([0-9.]+)")
-
             while self.running:
                 try:
                     if ser is None or not ser.is_open:
-                        ser = serial.Serial()
-                        ser.port = port
-                        ser.baudrate = baud
-                        ser.dtr = False
-                        ser.rts = False
-                        ser.timeout = 1.0
-                        ser.open()
+                        use_port = port or serial_ports.find_port(serial_ports.MAIN, use_cache=False)
+                        if not use_port:
+                            print("[SERIAL-BRIDGE] Sensor ESP32 not found. Is it plugged in? "
+                                  "Close any serial monitor, or pass --port COMx. Retrying in 3 s...", flush=True)
+                            time.sleep(3.0)
+                            continue
+                        print(f"[SERIAL-BRIDGE] Opening {use_port} at {baud} baud (DTR=False, RTS=False)...", flush=True)
+                        ser = serial_ports.open_port(use_port, baud, timeout=1.0)
                         self.ser = ser
-                        print(f"[COM3-BRIDGE] Successfully connected to physical {port}!", flush=True)
+                        self.serial_port = use_port
+                        print(f"[SERIAL-BRIDGE] Connected to sensor ESP32 on {use_port}", flush=True)
 
-                    while self.running and ser.is_open:
-                        try:
-                            line_bytes = ser.readline()
-                            if line_bytes:
-                                line = line_bytes.decode('utf-8', errors='replace').strip()
-                                m_hal = pattern_hal.search(line)
-                                if m_hal:
-                                    with self.lock:
-                                        self.last_ph = float(m_hal.group(1))
-                                        self.last_turb = float(m_hal.group(2))
-                                        self.last_status = m_hal.group(3)
-                                else:
-                                    m_turb = pattern_turb.search(line)
-                                    if m_turb:
-                                        with self.lock:
-                                            self.last_turb = float(m_turb.group(1))
-                                    m_ph = pattern_ph.search(line)
-                                    if m_ph:
-                                        with self.lock:
-                                            self.last_ph = 28.87
-                        except Exception:
-                            break
-
-                        now = time.time()
-                        if (now - last_emit_time >= self.sampling_interval):
-                            last_emit_time = now
-                            with self.lock:
-                                self.seq_num += 1
-                                cur_seq = self.seq_num
-                                cur_ph = self.last_ph
-                                cur_turb = self.last_turb
-                                cur_status = self.last_status
-
-                            ts_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                            payload = self._build_telemetry_payload(cur_seq, ts_iso, cur_ph, cur_turb, cur_status)
-
-                            # 1. Publish to live MQTT broker
-                            if self.mqtt_client and self.mqtt_connected:
-                                try:
-                                    self.mqtt_client.publish(
-                                        "aquatic/AQUA_FRESH_001/telemetry",
-                                        json.dumps(payload),
-                                        qos=0
-                                    )
-                                except Exception as e:
-                                    print(f"[COM3-BRIDGE] MQTT publish error: {e}", flush=True)
-
-                            # 2. Ingest through Gateway and persist to EventStore
-                            self.process_payload("aquatic/AQUA_FRESH_001/telemetry", payload)
+                    line_bytes = ser.readline()
+                    if not line_bytes:
+                        continue
+                    line = line_bytes.decode("utf-8", errors="replace").strip()
+                    idx = line.find(json_marker)
+                    if idx < 0:
+                        if line.startswith("[PH-CAL]") or line.startswith("[TURB-CAL]") or line.startswith("[CMD]"):
+                            print(f"[ESP32] {line}", flush=True)
+                        continue
+                    try:
+                        reading = json.loads(line[idx + len(json_marker):].strip())
+                    except ValueError:
+                        continue  # partial line
+                    self.handle_reading(reading)
 
                 except Exception as e:
-                    # Serial error handling: emit fallback telemetry at interval and retry connection with backoff
-                    now = time.time()
-                    if (now - last_emit_time >= self.sampling_interval):
-                        last_emit_time = now
-                        with self.lock:
-                            self.seq_num += 1
-                            cur_seq = self.seq_num
-                            cur_ph = self.last_ph
-                            cur_turb = self.last_turb
-                            cur_status = self.last_status
-
-                        ts_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                        payload = self._build_telemetry_payload(cur_seq, ts_iso, cur_ph, cur_turb, cur_status)
-
-                        if self.mqtt_client and self.mqtt_connected:
-                            try:
-                                self.mqtt_client.publish("aquatic/AQUA_FRESH_001/telemetry", json.dumps(payload), qos=0)
-                            except Exception:
-                                pass
-                        self.process_payload("aquatic/AQUA_FRESH_001/telemetry", payload)
-
+                    print(f"[SERIAL-BRIDGE] Serial error: {e}. Reconnecting in 3 s...", flush=True)
                     if ser:
                         try:
                             ser.close()
                         except Exception:
                             pass
+                    ser = None
                     self.ser = None
                     time.sleep(3.0)
 
             if ser and ser.is_open:
                 ser.close()
             self.ser = None
-            print("[COM3-BRIDGE] Serial bridge thread terminated.", flush=True)
+            print("[SERIAL-BRIDGE] Serial bridge thread terminated.", flush=True)
 
         t = threading.Thread(target=reader, daemon=True)
         t.start()
@@ -413,7 +373,19 @@ class LiveGatewayBridge:
         t = threading.Thread(target=watcher, daemon=True)
         t.start()
 
-    def run(self):
+    def run(self, serial_port=None, use_mqtt=True):
+        if not use_mqtt:
+            print("[LIVE-GATEWAY] MQTT disabled (--no-mqtt); serial -> database/dashboard only.", flush=True)
+            self.start_serial_bridge(serial_port, 115200)
+            self.start_command_watcher()
+            try:
+                while self.running:
+                    time.sleep(1.0)
+            except KeyboardInterrupt:
+                pass
+            finally:
+                self.running = False
+            return
         try:
             client = mqtt.Client(client_id=f"AquaGateway_Bridge_{int(time.time())}", callback_api_version=mqtt.CallbackAPIVersion.VERSION1)
         except AttributeError:
@@ -431,7 +403,7 @@ class LiveGatewayBridge:
             print(f"[LIVE-GATEWAY] Broker connection error: {e}", flush=True)
 
         # Start live physical serial bridge
-        self.start_serial_bridge("COM3", 115200)
+        self.start_serial_bridge(serial_port, 115200)
 
         # Start IPC command watcher
         self.start_command_watcher()
@@ -449,5 +421,10 @@ class LiveGatewayBridge:
             print("[LIVE-GATEWAY] Bridge stopped.", flush=True)
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Sensor ESP32 serial -> dashboard/MQTT bridge")
+    parser.add_argument("--port", help="Serial port of the sensor ESP32, e.g. COM7 (default: auto-detect)")
+    parser.add_argument("--no-mqtt", action="store_true", help="Do not connect to an MQTT broker")
+    args = parser.parse_args()
     bridge = LiveGatewayBridge()
-    bridge.run()
+    bridge.run(serial_port=args.port, use_mqtt=not args.no_mqtt)

@@ -559,17 +559,10 @@ void setup() {
         // Run Phase D Single Frame Test
         testSingleFrameCapture();
 
-        // Run Phase E 10 Repeated Frames Test
-        testRepeatedFramesCapture();
-
-        // Run Phase H 50-Frame Stability Test
-        testContinuousStability();
-
-        // Run Phase I Baseline Output
+        // Phase E/H (10- and 50-frame tests) take ~15 s, so they only run on
+        // demand ('e' / 'h'). Booting fast means a capture request from the
+        // laptop right after a reset is answered within a couple of seconds.
         printHardwareBaseline();
-
-        // Transmit one frame over Serial in Base64 for automatic python capture
-        transmitFrameOverSerial();
     } else {
         Serial.println("FATAL: Camera hardware failed to initialize in setup().");
     }

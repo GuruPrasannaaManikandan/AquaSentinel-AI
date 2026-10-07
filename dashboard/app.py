@@ -57,7 +57,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # API endpoint helper
-API_URL = os.environ.get("AQUASENTINEL_API_URL", "http://127.0.0.1:8001")
+# run_demo.py starts the FastAPI backend on port 8000
+API_URL = os.environ.get("AQUASENTINEL_API_URL", "http://127.0.0.1:8000")
 
 def fetch_json(endpoint, method="GET", data=None, timeout=3.0):
     try:
@@ -79,7 +80,8 @@ def fetch_json(endpoint, method="GET", data=None, timeout=3.0):
 
 def capture_camera_photo(device_id="AQUA_FRESH_001"):
     try:
-        r = requests.post(f"{API_URL}/api/camera/capture?device_id={device_id}", timeout=8.0)
+        # Backend waits up to 15 s for the frame over USB serial
+        r = requests.post(f"{API_URL}/api/camera/capture?device_id={device_id}", timeout=25.0)
         return r.json(), r.status_code
     except Exception as e:
         return {"success": False, "error": str(e), "camera": "ESP32-CAM", "sensor": "GC2145"}, 500
@@ -88,6 +90,55 @@ def capture_camera_photo(device_id="AQUA_FRESH_001"):
 # Page title
 st.title("🌊 IoT Aquatic Monitoring & Artificial Immune System Gateway")
 st.markdown("**Version 7.0 Advanced Multimodal Intelligence & Evidential Reasoning Platform**")
+
+# ----------------- LIVE PHYSICAL SENSOR PANEL -----------------
+PH_STATUS_TEXT = {
+    "PH_CALIBRATED": "Calibrated (pH 7 point set)",
+    "PH_ESTIMATE": "Estimate: not calibrated yet (send PH_CAL7 with the BNC shorted)",
+    "ADC_SATURATED": "Wiring fault: pH pin reads full scale (check the 33k/22k divider and Po wire)",
+    "NO_SIGNAL": "No signal: pH module output not connected",
+}
+TURB_STATUS_TEXT = {
+    "UNVERIFIED_UNCALIBRATED": "Live voltage (NTU is an estimate)",
+    "ADC_SATURATED": "Wiring fault: turbidity pin reads full scale",
+    "NO_SIGNAL": "No signal: turbidity OUT not connected or module unpowered",
+}
+
+
+def _fmt(value, fmt):
+    return fmt.format(value) if isinstance(value, (int, float)) else "N/A"
+
+
+@st.fragment(run_every=2)
+def live_sensor_panel():
+    st.subheader("🔴 Live Hardware Sensors (ESP32)")
+    live = fetch_json("/api/sensors/live", timeout=2.0)
+    if not live or not live.get("available"):
+        reason = (live or {}).get("reason", "Backend not reachable.")
+        st.warning(f"No live reading. {reason}")
+        return
+    if live.get("stale"):
+        st.error(f"Last reading is {live.get('age_sec')} s old. Is the sensor ESP32 plugged in and the bridge running?")
+
+    c1, c2, c3, c4 = st.columns(4)
+    turb_v = live.get("turbidity_voltage")
+    ntu = live.get("turbidity_ntu_est")
+    c1.metric("Turbidity (sensor voltage)", _fmt(turb_v, "{:.3f} V"), help="Higher voltage = clearer water")
+    c2.metric("Turbidity (estimated NTU)", _fmt(ntu, "{:.0f} NTU"),
+              help="DFRobot curve; send TURB_CLEAR once with the probe in clear water to reference it")
+    c3.metric("Water pH", _fmt(live.get("ph"), "{:.2f}"))
+    c4.metric("Reading #", live.get("sequence_number", "N/A"), help=f"Port {live.get('port')}, age {live.get('age_sec')} s")
+
+    t_status = live.get("turbidity_status", "")
+    p_status = live.get("ph_status", "")
+    st.caption(f"Turbidity: {TURB_STATUS_TEXT.get(t_status, t_status)}"
+               f"{'' if live.get('turbidity_clear_ref') else ' · clear-water reference not set'} · "
+               f"raw ADC {live.get('turbidity_raw', 'N/A')}")
+    st.caption(f"pH: {PH_STATUS_TEXT.get(p_status, p_status)} · module voltage {_fmt(live.get('ph_voltage'), '{:.3f} V')} · raw ADC {live.get('ph_raw', 'N/A')}")
+
+
+live_sensor_panel()
+st.divider()
 
 # Fetch system status and active devices
 health = fetch_json("/health")
@@ -275,13 +326,8 @@ with tab1:
             st.metric("Salinity / TDS (ppt)", f"{val:.2f}" if val is not None else "N/A")
         with sc3:
             val = telemetry.get("ph")
-            if val is not None:
-                raw_val = float(val)
-                RAW_MIN, RAW_MAX = 14.7, 28.9
-                ph_demo_val = max(0.0, min(14.0, ((raw_val - RAW_MIN) / (RAW_MAX - RAW_MIN)) * 14.0))
-                disp_val = f"{ph_demo_val:.2f}"
-            else:
-                disp_val = "N/A"
+            # Firmware 3.9+ converts pH on the board; no remapping here.
+            disp_val = f"{float(val):.2f}" if val is not None else "N/A"
 
             st.metric("Water pH", disp_val)
         with sc4:
@@ -359,7 +405,7 @@ with tab2:
 
         # Execute pending capture request triggered by button click
         if st.session_state.get("trigger_capture"):
-            with st.spinner("Requesting fresh frame from physical ESP32-CAM (GC2145 on COM4)..."):
+            with st.spinner("Requesting fresh frame from physical ESP32-CAM over USB..."):
                 capture_res, status_code = capture_camera_photo(selected_id)
                 if status_code == 200 and capture_res.get("success"):
                     st.session_state["camera_status"] = "SUCCESS"
@@ -385,7 +431,7 @@ with tab2:
 
         # Metadata Status Card
         card_col1, card_col2 = st.columns(2)
-        card_col1.info(f"**Camera:** `READY` (ESP32-CAM)\n\n**Sensor:** `GC2145` (COM4)\n\n**Source:** `PHYSICAL ESP32-CAM`")
+        card_col1.info(f"**Camera:** `READY` (ESP32-CAM)\n\n**Sensor:** `GC2145` (USB serial)\n\n**Source:** `PHYSICAL ESP32-CAM`")
         card_col2.info(f"**Status:** `{st.session_state.get('camera_status', 'READY')}`\n\n**Frame:** `#{st.session_state.get('camera_frame_sequence', 'N/A')}`\n\n**Last Capture:** `{st.session_state.get('camera_last_capture', 'None')}`")
 
         # Display the captured physical photo
@@ -396,17 +442,27 @@ with tab2:
         if full_img_path and os.path.exists(full_img_path):
             st.image(
                 full_img_path,
-                caption=f"📷 Physical ESP32-CAM Photo (GC2145 on COM4 | Frame #{st.session_state.get('camera_frame_sequence')} | Captured: {st.session_state.get('camera_last_capture')})",
+                caption=f"📷 Physical ESP32-CAM Photo (GC2145 | Frame #{st.session_state.get('camera_frame_sequence')} | Captured: {st.session_state.get('camera_last_capture')})",
                 use_container_width=True
             )
         elif os.path.exists(legacy_docs_img):
             st.image(
                 legacy_docs_img,
-                caption="📷 Physical ESP32-CAM Photo (GC2145 on COM4 | Ready)",
+                caption="📷 Old photo from an earlier session (not live). Click CAPTURE PHOTO for a fresh one.",
                 use_container_width=True
             )
         else:
             st.warning("No camera photo captured yet. Click '📸 CAPTURE PHOTO' to acquire a fresh frame.")
+
+        # Recent captures gallery (newest first)
+        captures_dir = os.path.join(BASE_DIR, "data", "camera_captures")
+        if os.path.isdir(captures_dir):
+            recent = sorted((f for f in os.listdir(captures_dir) if f.lower().endswith(".jpg")), reverse=True)[:6]
+            if len(recent) > 1:
+                with st.expander(f"🖼️ Recent captures ({len(recent)})"):
+                    gcols = st.columns(3)
+                    for i, fname in enumerate(recent):
+                        gcols[i % 3].image(os.path.join(captures_dir, fname), caption=fname.replace("esp32cam_", "").replace(".jpg", ""), use_container_width=True)
 
         # Manual Capture Button
         btn_label = "📸 Capturing..." if st.session_state.get("camera_capturing") else "📸 CAPTURE PHOTO"
@@ -610,7 +666,7 @@ with tab4:
         df = pd.DataFrame(hist_telemetry).sort_values("timestamp")
         st.markdown("#### Water Temperature Trend (°C)")
         st.line_chart(df, x="timestamp", y="temperature_c")
-        st.markdown("#### pH Levels Trend (Uncalibrated Linear Estimate)")
+        st.markdown("#### pH Levels Trend")
         st.line_chart(df, x="timestamp", y="ph")
         st.markdown("#### Turbidity Voltage Trend (V) [Uncalibrated NTU]")
         st.line_chart(df, x="timestamp", y="turbidity_ntu")

@@ -1,6 +1,21 @@
 #include "CalibratedSensor.h"
 #include <string.h>
 
+namespace {
+// Drivers that already convert to engineering units (or deliberately report raw
+// voltage) are passed through untouched instead of re-scaled here.
+bool isPassThroughStatus(const char* st) {
+    return strcmp(st, "UNVERIFIED_UNCALIBRATED") == 0 ||
+           strcmp(st, "PH_ESTIMATE") == 0 ||
+           strcmp(st, "PH_CALIBRATED") == 0;
+}
+
+// Wiring faults detected by the driver itself; surfaced verbatim.
+bool isDriverFaultStatus(const char* st) {
+    return strcmp(st, "ADC_SATURATED") == 0 || strcmp(st, "NO_SIGNAL") == 0;
+}
+}
+
 CalibratedSensor::CalibratedSensor(ISensor* rawSensor, SensorType type, CalibrationManager* manager)
     : _rawSensor(rawSensor), _type(type), _manager(manager), _lastValidation(ValidationState::FAULT), _lastValue(-999.0f) {
 }
@@ -31,11 +46,14 @@ float CalibratedSensor::read() {
         return -999.0f;
     }
 
-    // If raw sensor is unverified/uncalibrated (e.g. Turbidity optical probe pending trimpot adjustment),
-    // bypass polynomial NTU conversion so we do NOT claim false calibrated NTU.
-    if (strcmp(_rawSensor->status(), "UNVERIFIED_UNCALIBRATED") == 0) {
+    // Pass through drivers that convert their own units (pH) or report raw voltage
+    // (turbidity), so we do NOT apply a second, made-up conversion.
+    if (isPassThroughStatus(_rawSensor->status())) {
         _lastValue = rawValue;
-        return rawValue; // Report raw reconstructed voltage
+        if (_type == SensorType::PH) {
+            _lastValidation = _manager->validate(_type, rawValue);
+        }
+        return rawValue;
     }
 
     // Apply Calibration convert
@@ -66,8 +84,8 @@ const char* CalibratedSensor::status() {
     if (strcmp(_rawSensor->status(), "FAULT") == 0) {
         return "FAULT";
     }
-    if (strcmp(_rawSensor->status(), "UNVERIFIED_UNCALIBRATED") == 0) {
-        return "UNVERIFIED_UNCALIBRATED";
+    if (isPassThroughStatus(_rawSensor->status()) || isDriverFaultStatus(_rawSensor->status())) {
+        return _rawSensor->status();
     }
     if (strcmp(_rawSensor->status(), "UNAVAILABLE") == 0) {
         return "UNAVAILABLE";

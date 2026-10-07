@@ -1,8 +1,9 @@
 """
-AquaSentinel-AI: Physical ESP32-CAM (GC2145 on COM4) Single-Capture Service
-===========================================================================
+AquaSentinel-AI: Physical ESP32-CAM (GC2145) Single-Capture Service
+===================================================================
 Coordinates single manual photo acquisition from the physical ESP32-CAM:
-- Interfaces via USB-Serial CH340 on COM4 @ 115200 baud
+- Interfaces via USB-Serial CH340 @ 115200 baud. The COM port is found
+  automatically (see src/utils/serial_ports.py) or set with AQUA_CAM_PORT.
 - Triggers hardware capture via 'c' serial command
 - Validates JPEG magic bytes (0xFF 0xD8) and dimensions (320x240)
 - Enforces fresh-frame guarantee with unique capture_id and monotonically
@@ -29,6 +30,8 @@ try:
 except ImportError:
     serial = None
 
+from src.utils import serial_ports
+
 logger = logging.getLogger("PhysicalCameraService")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -48,10 +51,10 @@ class PhysicalCameraService:
                 cls._instance._initialized = False
             return cls._instance
 
-    def __init__(self, port: str = "COM4", baud: int = 115200, timeout_sec: float = 5.0):
+    def __init__(self, port: Optional[str] = None, baud: int = 115200, timeout_sec: float = 15.0):
         if self._initialized:
             return
-        self.port = port
+        self.port = port  # None -> resolved on first capture
         self.baud = baud
         self.timeout_sec = timeout_sec
         self.lock = threading.Lock()
@@ -82,7 +85,7 @@ class PhysicalCameraService:
             "status": status,
             "camera": self.camera_model,
             "sensor": self.sensor_model,
-            "port": self.port,
+            "port": self.port or "auto-detect",
             "source": "PHYSICAL_ESP32_CAM",
             "frame_sequence": self.frame_sequence,
             "last_capture": self.last_capture_meta,
@@ -119,19 +122,24 @@ class PhysicalCameraService:
             jpeg_bytes = None
             width, height = 320, 240
 
-            # 1. Attempt opening COM4 with strict timeout & DTR/RTS False
-            try:
-                ser = serial.Serial()
-                ser.port = self.port
-                ser.baudrate = self.baud
-                ser.dtr = False
-                ser.rts = False
-                ser.timeout = 1.0
-                ser.open()
+            # 1. Resolve the camera port (env override, probing, or USB chip)
+            port = self.port or serial_ports.find_port(serial_ports.CAM)
+            if not port:
+                err_msg = ("ESP32-CAM not found on any serial port. Check the USB cable, close any "
+                           "Arduino/PlatformIO serial monitor, or set AQUA_CAM_PORT (e.g. COM4).")
+                self.last_error = err_msg
+                self.last_status = "OFFLINE"
+                return False, {"success": False, "camera": self.camera_model, "sensor": self.sensor_model,
+                               "error": err_msg, "source": "PHYSICAL_ESP32_CAM"}
+            self.port = port
 
-                # 2. Flush input buffer & trigger frame acquisition via 'c'
+            # 2. Open without toggling DTR/RTS (the MB board wires them to EN/IO0),
+            #    trigger capture with 'c' and read the Base64 frame.
+            try:
+                ser = serial_ports.open_port(port, self.baud, timeout=1.0)
                 ser.reset_input_buffer()
                 ser.write(b"c\r\n")
+                last_trigger = time.time()
 
                 b64_lines = []
                 capturing = False
@@ -139,6 +147,10 @@ class PhysicalCameraService:
                 while time.time() - start_time < timeout:
                     line_bytes = ser.readline()
                     if not line_bytes:
+                        # Board may have been mid-boot; re-send the trigger once in a while.
+                        if not capturing and time.time() - last_trigger > 4.0:
+                            ser.write(b"c\r\n")
+                            last_trigger = time.time()
                         continue
                     line = line_bytes.decode("utf-8", errors="replace").strip()
 
@@ -159,25 +171,23 @@ class PhysicalCameraService:
                     if capturing:
                         b64_lines.append(line)
             except Exception as e:
-                # If COM4 is busy (e.g., Windows port lock) or serial read failed, fallback to verified physical frame
-                logger.warning(f"Direct COM4 acquisition error ({e}); using verified physical GC2145 optical frame.")
-                if os.path.exists(DOCS_IMG_PATH):
-                    try:
-                        with open(DOCS_IMG_PATH, "rb") as f:
-                            jpeg_bytes = f.read()
-                    except Exception:
-                        jpeg_bytes = None
-                if not jpeg_bytes:
-                    err_msg = f"Cannot open physical camera on {self.port}: {e}"
-                    self.last_error = err_msg
-                    self.last_status = "OFFLINE"
-                    return False, {
-                        "success": False,
-                        "camera": self.camera_model,
-                        "sensor": self.sensor_model,
-                        "error": err_msg,
-                        "source": "PHYSICAL_ESP32_CAM"
-                    }
+                # Never substitute an old photo here: the dashboard must show the real state.
+                if "denied" in str(e).lower() or "busy" in str(e).lower():
+                    hint = " The port is in use: close the Arduino/PlatformIO serial monitor."
+                else:
+                    hint = ""
+                    serial_ports.forget(serial_ports.CAM)
+                    self.port = None  # re-detect next time (board may have moved ports)
+                err_msg = f"Cannot open ESP32-CAM on {port}: {e}.{hint}"
+                self.last_error = err_msg
+                self.last_status = "OFFLINE"
+                return False, {
+                    "success": False,
+                    "camera": self.camera_model,
+                    "sensor": self.sensor_model,
+                    "error": err_msg,
+                    "source": "PHYSICAL_ESP32_CAM"
+                }
             finally:
                 if ser is not None:
                     try:

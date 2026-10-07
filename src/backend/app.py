@@ -498,17 +498,46 @@ def get_device_actuators(
         raise HTTPException(status_code=404, detail=f"Device {device_id} not found.")
     return service.event_store.get_historical_actuators(device_id, start_time, end_time)
 
+LIVE_SENSOR_PATH = os.path.join(BASE_DIR, "data", "live_sensor.json")
+
+
+@app.get("/api/sensors/live", tags=["Sensors"])
+def get_live_sensor_reading():
+    """
+    Latest physical reading from the sensor ESP32 (pH + turbidity), as written by
+    scripts/live_mqtt_gateway_bridge.py. `stale` is true when the bridge has not
+    received anything for 10 seconds (board unplugged or bridge not running).
+    """
+    if not os.path.exists(LIVE_SENSOR_PATH):
+        return {"available": False, "reason": "No reading yet. Start scripts/live_mqtt_gateway_bridge.py with the sensor ESP32 plugged in."}
+    try:
+        with open(LIVE_SENSOR_PATH, "r") as f:
+            reading = json.load(f)
+    except Exception as e:
+        return {"available": False, "reason": f"Could not read live sensor file: {e}"}
+    age = None
+    try:
+        received = datetime.datetime.fromisoformat(reading.get("received_at"))
+        age = (datetime.datetime.now(datetime.timezone.utc) - received).total_seconds()
+    except Exception:
+        pass
+    reading["available"] = True
+    reading["age_sec"] = round(age, 1) if age is not None else None
+    reading["stale"] = age is None or age > 10.0
+    return sanitize_json_data(reading)
+
+
 @app.post("/api/camera/capture", tags=["Camera"])
 @app.post("/camera/capture", tags=["Camera"])
 def capture_physical_camera_photo(
     device_id: Optional[str] = Query("AQUA_FRESH_001", description="Device ID to bind capture evidence to")
 ):
     """
-    Triggers ONE manual hardware acquisition from the physical ESP32-CAM (GC2145 on COM4).
+    Triggers ONE manual hardware acquisition from the physical ESP32-CAM (GC2145, port auto-detected).
     Enforces fresh-frame guarantee, saves image to data/camera_captures/,
     evaluates optical intelligence via gateway, and returns structured JSON metadata.
     """
-    ok, res = camera_service.capture_single_photo(timeout_sec=5.0)
+    ok, res = camera_service.capture_single_photo(timeout_sec=15.0)
     if not ok:
         return JSONResponse(status_code=400, content=sanitize_json_data(res))
 
