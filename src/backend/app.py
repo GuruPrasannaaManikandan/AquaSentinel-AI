@@ -305,8 +305,19 @@ def get_device_intelligence(device_id: str = Path(...)):
     sensor_q = decision.get("sensor_quality") if decision else None
     if not sensor_q and telemetry and sensors:
         try:
+            # Same packet's per-sensor states (UNAVAILABLE sensors must not be scored as faults)
+            _detail = {}
+            try:
+                with open(LIVE_SENSOR_PATH, "r") as _f:
+                    _detail = json.load(_f)
+            except Exception:
+                pass
+            _same = _detail.get("received_at") == telemetry.get("timestamp")
+            sensors_q = dict(sensors,
+                             turbidity_raw=telemetry.get("turbidity_raw"),
+                             sensor_states=_detail.get("sensor_states") if _same else None)
             sensor_q = service.runtime.gateway.quality_evaluator.evaluate(
-                sensors, timestamp=telemetry.get("timestamp"), device_id=device_id
+                sensors_q, timestamp=telemetry.get("timestamp"), device_id=device_id
             ).to_dict()
         except Exception:
             sensor_q = None
@@ -501,30 +512,98 @@ def get_device_actuators(
 LIVE_SENSOR_PATH = os.path.join(BASE_DIR, "data", "live_sensor.json")
 
 
+def estimate_turbidity_ntu(raw, clear_raw):
+    """
+    Estimated NTU from the raw turbidity ADC count, referenced to the stored clear-water raw.
+
+    The ADC sees the probe through an unknown divider, so the raw count is rescaled so that
+    clear water equals 4.2 V (the DFRobot SEN0189 clear-water output), then the DFRobot curve
+    NTU = -1120.4 V^2 + 5742.3 V - 4352.9 (valid 2.5..4.2 V) is applied. Returns None without
+    a clear-water reference: an estimate is never replaced by 0.
+    """
+    if raw is None or not clear_raw or clear_raw <= 0:
+        return None
+    ratio = min(max(float(raw) / float(clear_raw), 0.0), 1.05)
+    v = 4.2 * ratio
+    if v >= 4.2:
+        return 0.0
+    if v < 2.5:
+        return 3000.0
+    ntu = -1120.4 * v * v + 5742.3 * v - 4352.9
+    return round(min(max(ntu, 0.0), 3000.0), 1)
+
+
 @app.get("/api/sensors/live", tags=["Sensors"])
-def get_live_sensor_reading():
+def get_live_sensor_reading(device_id: str = Query("AQUA_FRESH_001")):
     """
-    Latest physical reading from the sensor ESP32 (pH + turbidity), as written by
-    scripts/live_mqtt_gateway_bridge.py. `stale` is true when the bridge has not
-    received anything for 10 seconds (board unplugged or bridge not running).
+    THE authoritative latest-live telemetry object for the dashboard.
+
+    Values come from the newest EventStore telemetry row (the same row /devices/{id}/latest
+    serves). Per-sensor states and diagnostics come from the bridge's detail file, but only
+    when it describes that very same packet (identical timestamp). `stale` is true when the
+    newest packet is older than 10 s.
     """
-    if not os.path.exists(LIVE_SENSOR_PATH):
-        return {"available": False, "reason": "No reading yet. Start scripts/live_mqtt_gateway_bridge.py with the sensor ESP32 plugged in."}
+    row = service.event_store.get_latest_telemetry(device_id)
+    if not row:
+        return {"available": False, "reason": "No telemetry stored yet. Start scripts/live_mqtt_gateway_bridge.py."}
+
+    detail = {}
     try:
         with open(LIVE_SENSOR_PATH, "r") as f:
-            reading = json.load(f)
-    except Exception as e:
-        return {"available": False, "reason": f"Could not read live sensor file: {e}"}
+            detail = json.load(f)
+    except Exception:
+        detail = {}
+    same_packet = detail.get("received_at") == row.get("timestamp")
+    d = detail if same_packet else {}
+
     age = None
     try:
-        received = datetime.datetime.fromisoformat(reading.get("received_at"))
-        age = (datetime.datetime.now(datetime.timezone.utc) - received).total_seconds()
+        age = (datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(row["timestamp"])).total_seconds()
     except Exception:
         pass
-    reading["available"] = True
-    reading["age_sec"] = round(age, 1) if age is not None else None
-    reading["stale"] = age is None or age > 10.0
-    return sanitize_json_data(reading)
+
+    out = {
+        "available": True,
+        "source": "EventStore latest telemetry row" + (" + same-packet detail" if same_packet else " (no matching detail packet)"),
+        "device_id": device_id,
+        "row_id": row.get("id"),
+        "timestamp": row.get("timestamp"),
+        "sequence_number": d.get("sequence_number", row.get("id")),
+        "age_sec": round(age, 1) if age is not None else None,
+        "stale": age is None or age > 10.0,
+        "fw": d.get("fw"),
+        "trigger": d.get("trigger"),  # PERIODIC or the command that caused this acquisition
+        "port": d.get("port"),
+        "ph": row.get("ph"),
+        "temperature_c": row.get("temperature_c"),
+        "turbidity_ntu": row.get("turbidity_ntu"),
+        "turbidity_raw": row.get("turbidity_raw"),
+        "salinity_ppt": row.get("salinity_ppt"),
+        "dissolved_oxygen_mg_l": row.get("dissolved_oxygen_mg_l"),
+        "latitude": row.get("latitude"),
+        "longitude": row.get("longitude"),
+        "sensor_status": row.get("sensor_status"),
+        "sensor_states": d.get("sensor_states") or {},
+        "reasons": d.get("reasons") or {},
+        "ph_estimate": d.get("ph_estimate"),
+        "ph_voltage": d.get("ph_voltage"),
+        "ph_raw": d.get("ph_raw"),
+        "turbidity_adc_raw": d.get("turbidity_adc_raw"),
+        "turbidity_rel_clear_pct": d.get("turbidity_rel_clear_pct"),
+        "turbidity_clear_ref": d.get("turbidity_clear_ref"),
+        "turbidity_clear_ref_raw": d.get("turbidity_clear_ref_raw"),
+        "actuator_test": d.get("actuator_test", "OFF"),
+        "device_log": d.get("device_log") or [],
+        "wifi": bool(row.get("wifi_connected")),
+        "mqtt": bool(row.get("mqtt_connected")),
+        "detail_matches_row": same_packet,
+    }
+    if out["turbidity_ntu"] is None and (out["sensor_states"].get("turbidity") == "VALID"):
+        out["turbidity_ntu"] = estimate_turbidity_ntu(out["turbidity_raw"], out["turbidity_clear_ref_raw"])
+        out["turbidity_ntu_basis"] = "ESTIMATED_DFROBOT_CURVE_CLEAR_REF" if out["turbidity_ntu"] is not None else None
+    else:
+        out["turbidity_ntu_basis"] = "DEVICE" if out["turbidity_ntu"] is not None else None
+    return sanitize_json_data(out)
 
 
 @app.post("/api/camera/capture", tags=["Camera"])
@@ -671,7 +750,7 @@ def post_device_command(
             "message": cmd_result.get("message", f"Command {body.command} executed successfully.") if isinstance(cmd_result, dict) else f"Command {body.command} dispatched to {device_id}."
         }
     except ValueError as e:
-        status_code = 400 if "interval" in str(e).lower() else 404
+        status_code = 400 if any(k in str(e).lower() for k in ("interval", "invalid", "needs payload")) else 404
         raise HTTPException(status_code=status_code, detail=str(e))
     except ConnectionError as e:
         raise HTTPException(status_code=503, detail=f"Device {device_id} network is offline: {e}")

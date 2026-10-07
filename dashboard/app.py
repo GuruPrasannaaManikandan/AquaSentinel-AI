@@ -132,12 +132,24 @@ def sensor_display(live, name):
     if name == "turbidity":
         raw = live.get("turbidity_raw")
         if raw is not None and st_ == "VALID":
-            return f"{raw:.0f} raw", "VALID", f"relative: {_fmt(live.get('turbidity_rel_clear_pct'), '{:.0f}')}% of the stored clear-water reference (raw {_fmt(live.get('turbidity_clear_ref_raw'), '{:.0f}')}); NOT NTU"
+            return f"{raw:.0f} raw", "VALID", f"relative: {_fmt(live.get('turbidity_rel_clear_pct'), '{:.0f}')}% of the stored clear-water reference (raw {_fmt(live.get('turbidity_clear_ref_raw'), '{:.0f}')}); higher = clearer"
         if raw is not None:
             return f"{raw:.0f} raw", st_ or "UNCALIBRATED", "raw ADC count, not volts/NTU; no clear-water reference stored (higher = clearer)"
         if st_ == "FAULT" or live.get("sensor_status") == "FAULT":
             return "FAULT", "FAULT", f"no usable signal (ADC raw {_fmt(live.get('turbidity_adc_raw'), '{:.0f}')})"
         return "N/A", st_, "no reading"
+    if name == "turbidity_ntu":
+        st_ = states.get("turbidity")  # NTU is derived from the turbidity channel
+        ntu = live.get("turbidity_ntu")
+        if ntu is not None and st_ == "VALID":
+            basis = live.get("turbidity_ntu_basis")
+            note = ("DFRobot curve, referenced to clear water (raw "
+                    f"{_fmt(live.get('turbidity_clear_ref_raw'), '{:.0f}')}); estimate, not a lab measurement"
+                    if basis == "ESTIMATED_DFROBOT_CURVE_CLEAR_REF" else "reported by the device")
+            return f"{ntu:.0f} NTU", "VALID", note
+        if live.get("turbidity_raw") is not None and st_ == "VALID":
+            return "N/A", "UNCALIBRATED", "no clear-water reference stored, so no NTU estimate"
+        return "N/A", st_ or "UNAVAILABLE", "no valid turbidity reading"
     if name == "temperature":
         t = live.get("temperature_c")
         if t is not None:
@@ -175,23 +187,22 @@ def live_sensor_panel():
                    "Sensor readings below are real and are NOT altered.")
 
     c1, c2, c3 = st.columns(3)
-    sensor_card(c1, "Turbidity (raw ADC)", live, "turbidity")
-    sensor_card(c2, "Water pH", live, "ph")
-    sensor_card(c3, "Temperature (DS18B20)", live, "temperature")
+    sensor_card(c1, "Turbidity (NTU, estimated)", live, "turbidity_ntu")
+    sensor_card(c2, "Turbidity (raw ADC)", live, "turbidity")
+    sensor_card(c3, "Water pH", live, "ph")
 
     d1, d2, d3 = st.columns(3)
-    sensor_card(d1, "Dissolved Oxygen", live, "dissolved_oxygen")
-    sensor_card(d2, "Salinity / TDS", live, "salinity")
-    d3.metric("GPS", "N/A")
-    d3.caption(f"{STATE_LABEL['UNAVAILABLE']} - " + ((live.get("reasons") or {}).get("gps") or "no GPS module installed"))
+    sensor_card(d1, "Temperature (DS18B20)", live, "temperature")
+    sensor_card(d2, "Dissolved Oxygen", live, "dissolved_oxygen")
+    sensor_card(d3, "Salinity / TDS", live, "salinity")
 
     e1, e2, e3 = st.columns(3)
-    e1.metric("Pump", "N/A")
-    e1.caption(f"{STATE_LABEL['UNAVAILABLE']} - " + ((live.get("reasons") or {}).get("pump") or "no pump load connected (relay switching only)"))
-    e2.metric("Packet #", live.get("sequence_number", "N/A"), help=f"{live.get('timestamp')} - age {live.get('age_sec')} s - fw {live.get('fw')} - {live.get('port')}")
-    e2.caption(f"updated {live.get('timestamp')}")
-    e3.metric("Firmware", live.get("fw") or "N/A")
-    e3.caption("reported by the board")
+    e1.metric("GPS", "N/A")
+    e1.caption(f"{STATE_LABEL['UNAVAILABLE']} - " + ((live.get("reasons") or {}).get("gps") or "no GPS module installed"))
+    e2.metric("Pump", "N/A")
+    e2.caption(f"{STATE_LABEL['UNAVAILABLE']} - " + ((live.get("reasons") or {}).get("pump") or "no pump load connected (relay switching only)"))
+    e3.metric("Packet #", live.get("sequence_number", "N/A"), help=f"{live.get('timestamp')} - age {live.get('age_sec')} s - fw {live.get('fw')} - {live.get('port')}")
+    e3.caption(f"updated {live.get('timestamp')} | firmware {live.get('fw') or 'N/A'}")
     st.caption(f"Source: {live.get('source')}")
     if live.get("device_log"):
         with st.expander("ESP32 replies (calibration / actuator-test commands)"):
