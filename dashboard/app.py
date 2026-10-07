@@ -99,7 +99,7 @@ st.markdown("**Version 7.0 Advanced Multimodal Intelligence & Evidential Reasoni
 #   UNCALIBRATED hardware present and answering, but no trustworthy calibration yet
 #   FAULT        hardware present but malfunctioning / invalid data
 #   UNAVAILABLE  hardware is not physically present (NOT a fault)
-STATE_LABEL = {"VALID": "🟢 VALID", "UNCALIBRATED": "🟡 UNCALIBRATED", "FAULT": "🔴 FAULT", "UNAVAILABLE": "⚪ UNAVAILABLE"}
+STATE_LABEL = {"VALID": "🟢 VALID", "UNCALIBRATED": "🟡 UNCALIBRATED", "FAULT": "🔴 FAULT", "UNAVAILABLE": "⚪ UNAVAILABLE", "SETTLING": "🟡 SETTLING"}
 PHYSICAL_DEVICE_ID = "AQUA_FRESH_001"
 
 
@@ -141,6 +141,9 @@ def sensor_display(live, name):
     if name == "turbidity_ntu":
         st_ = states.get("turbidity")  # NTU is derived from the turbidity channel
         ntu = live.get("turbidity_ntu")
+        if st_ == "VALID" and live.get("turbidity_settling"):
+            return "SETTLING", "SETTLING", (f"reading not steady yet (raw spread {_fmt(live.get('turbidity_raw_spread'), '{:.0f}')} counts "
+                                                f"over the last {live.get('turbidity_smooth_samples')} readings); hold the probe still")
         if ntu is not None and st_ == "VALID":
             if live.get("turbidity_ntu_basis") != "ESTIMATED_DFROBOT_CURVE_CLEAR_REF":
                 return f"{ntu:.0f} NTU", "VALID", "reported by the device"

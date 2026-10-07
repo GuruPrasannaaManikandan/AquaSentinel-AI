@@ -642,8 +642,15 @@ def get_live_sensor_reading(device_id: str = Query("AQUA_FRESH_001")):
         ref = load_turbidity_clear_ref()
         clear_raw = ref["raw_median"] if ref else out["turbidity_clear_ref_raw"]
         ntu, within_noise = estimate_turbidity_ntu(smoothed, clear_raw)
+        # Don't publish a number while the probe is being moved / is settling.
+        spread = (max(recent) - min(recent)) if recent else None
+        settling = bool(clear_raw) and spread is not None and spread > TURB_DEADBAND_FRAC * clear_raw
+        out["turbidity_raw_spread"] = spread
+        out["turbidity_settling"] = settling
+        if settling:
+            ntu, within_noise = None, False
         out["turbidity_ntu"] = ntu
-        out["turbidity_ntu_basis"] = "ESTIMATED_DFROBOT_CURVE_CLEAR_REF" if ntu is not None else None
+        out["turbidity_ntu_basis"] = "ESTIMATED_DFROBOT_CURVE_CLEAR_REF" if (ntu is not None or settling) else None
         out["turbidity_raw_smoothed"] = smoothed
         out["turbidity_smooth_samples"] = len(recent)
         out["turbidity_ntu_within_noise"] = within_noise
