@@ -512,25 +512,61 @@ def get_device_actuators(
 LIVE_SENSOR_PATH = os.path.join(BASE_DIR, "data", "live_sensor.json")
 
 
-def estimate_turbidity_ntu(raw, clear_raw):
+TURB_SMOOTH_N = 15             # median of the last 15 packets (~30 s at 2 s/packet)
+TURB_DEADBAND_FRAC = 0.05      # measured 60 s noise was +/-1 count (~1%); floor of 5% of the reference
+TURB_REF_PATH = os.path.join(BASE_DIR, "data", "turbidity_clear_ref.json")
+
+
+def estimate_turbidity_ntu(raw, clear_raw, deadband_frac=TURB_DEADBAND_FRAC):
     """
-    Estimated NTU from the raw turbidity ADC count, referenced to the stored clear-water raw.
+    Estimated NTU from a (smoothed) raw turbidity ADC count, referenced to the clear-water raw.
 
     The ADC sees the probe through an unknown divider, so the raw count is rescaled so that
     clear water equals 4.2 V (the DFRobot SEN0189 clear-water output), then the DFRobot curve
-    NTU = -1120.4 V^2 + 5742.3 V - 4352.9 (valid 2.5..4.2 V) is applied. Returns None without
-    a clear-water reference: an estimate is never replaced by 0.
+    NTU = -1120.4 V^2 + 5742.3 V - 4352.9 (valid 2.5..4.2 V) is applied. Readings within the
+    noise deadband of the reference count as clear water (0 NTU). Returns (ntu, within_noise);
+    ntu is None without a clear-water reference: an estimate is never replaced by 0.
     """
     if raw is None or not clear_raw or clear_raw <= 0:
-        return None
+        return None, False
     ratio = min(max(float(raw) / float(clear_raw), 0.0), 1.05)
+    if ratio >= 1.0 - deadband_frac:
+        return 0.0, True
     v = 4.2 * ratio
-    if v >= 4.2:
-        return 0.0
     if v < 2.5:
-        return 3000.0
+        return 3000.0, False
     ntu = -1120.4 * v * v + 5742.3 * v - 4352.9
-    return round(min(max(ntu, 0.0), 3000.0), 1)
+    return round(min(max(ntu, 0.0), 3000.0), 1), False
+
+
+def load_turbidity_clear_ref():
+    try:
+        with open(TURB_REF_PATH, "r") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def recent_turbidity_raw(device_id, n=TURB_SMOOTH_N):
+    rows = service.event_store.get_historical_telemetry(device_id, limit=n) or []
+    return [float(r["turbidity_raw"]) for r in rows if r.get("turbidity_raw") is not None]
+
+
+@app.post("/api/sensors/turbidity/clear-reference", tags=["Sensors"])
+def capture_turbidity_clear_reference(device_id: str = Query("AQUA_FRESH_001")):
+    """Stores the median of the last ~30 s of raw turbidity readings as the clear-water reference."""
+    vals = recent_turbidity_raw(device_id)
+    if len(vals) < 10:
+        raise HTTPException(status_code=409, detail=f"Only {len(vals)} recent turbidity readings; need at least 10.")
+    ref = {
+        "raw_median": float(np.median(vals)),
+        "raw_min": min(vals), "raw_max": max(vals), "samples": len(vals),
+        "captured_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "device_id": device_id,
+    }
+    with open(TURB_REF_PATH, "w") as f:
+        json.dump(ref, f, indent=2)
+    return ref
 
 
 @app.get("/api/sensors/live", tags=["Sensors"])
@@ -599,8 +635,21 @@ def get_live_sensor_reading(device_id: str = Query("AQUA_FRESH_001")):
         "detail_matches_row": same_packet,
     }
     if out["turbidity_ntu"] is None and (out["sensor_states"].get("turbidity") == "VALID"):
-        out["turbidity_ntu"] = estimate_turbidity_ntu(out["turbidity_raw"], out["turbidity_clear_ref_raw"])
-        out["turbidity_ntu_basis"] = "ESTIMATED_DFROBOT_CURVE_CLEAR_REF" if out["turbidity_ntu"] is not None else None
+        # Smooth before converting: the curve is steep near clear water, so raw noise would
+        # otherwise swing the estimate by hundreds of NTU.
+        recent = recent_turbidity_raw(device_id)
+        smoothed = float(np.median(recent)) if recent else out["turbidity_raw"]
+        ref = load_turbidity_clear_ref()
+        clear_raw = ref["raw_median"] if ref else out["turbidity_clear_ref_raw"]
+        ntu, within_noise = estimate_turbidity_ntu(smoothed, clear_raw)
+        out["turbidity_ntu"] = ntu
+        out["turbidity_ntu_basis"] = "ESTIMATED_DFROBOT_CURVE_CLEAR_REF" if ntu is not None else None
+        out["turbidity_raw_smoothed"] = smoothed
+        out["turbidity_smooth_samples"] = len(recent)
+        out["turbidity_ntu_within_noise"] = within_noise
+        out["turbidity_deadband_pct"] = round(TURB_DEADBAND_FRAC * 100, 1)
+        out["turbidity_ntu_ref_raw"] = clear_raw
+        out["turbidity_ntu_ref_source"] = ("BACKEND_MEDIAN_" + ref["captured_at"]) if ref else "DEVICE_SINGLE_SAMPLE"
     else:
         out["turbidity_ntu_basis"] = "DEVICE" if out["turbidity_ntu"] is not None else None
     return sanitize_json_data(out)

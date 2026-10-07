@@ -142,10 +142,13 @@ def sensor_display(live, name):
         st_ = states.get("turbidity")  # NTU is derived from the turbidity channel
         ntu = live.get("turbidity_ntu")
         if ntu is not None and st_ == "VALID":
-            basis = live.get("turbidity_ntu_basis")
-            note = ("DFRobot curve, referenced to clear water (raw "
-                    f"{_fmt(live.get('turbidity_clear_ref_raw'), '{:.0f}')}); estimate, not a lab measurement"
-                    if basis == "ESTIMATED_DFROBOT_CURVE_CLEAR_REF" else "reported by the device")
+            if live.get("turbidity_ntu_basis") != "ESTIMATED_DFROBOT_CURVE_CLEAR_REF":
+                return f"{ntu:.0f} NTU", "VALID", "reported by the device"
+            note = (f"DFRobot curve, referenced to clear water (raw {_fmt(live.get('turbidity_ntu_ref_raw'), '{:.0f}')}); "
+                    f"median of last {live.get('turbidity_smooth_samples')} readings = raw {_fmt(live.get('turbidity_raw_smoothed'), '{:.0f}')}; "
+                    f"deadband {_fmt(live.get('turbidity_deadband_pct'), '{:.0f}')}% of reference; estimate, not a lab measurement")
+            if live.get("turbidity_ntu_within_noise"):
+                return "≈0 NTU", "VALID", "within sensor noise of clear water - " + note
             return f"{ntu:.0f} NTU", "VALID", note
         if live.get("turbidity_raw") is not None and st_ == "VALID":
             return "N/A", "UNCALIBRATED", "no clear-water reference stored, so no NTU estimate"
