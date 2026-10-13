@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import os
+import time
 import requests
 import json
 
@@ -438,11 +439,30 @@ _ta, _tb = st.sidebar.columns(2)
 _tc, _td = st.sidebar.columns(2)
 for _col, _mode, _label in ((_ta, "NORMAL", "🟢 NORMAL"), (_tb, "WARNING", "🟡 WARNING"), (_tc, "CRITICAL", "🔴 CRITICAL"), (_td, "OFF", "⏹ END TEST")):
     if _col.button(_label, key=f"act_{_mode}", use_container_width=True):
-        _r = fetch_json(f"/devices/{PHYSICAL_DEVICE_ID}/command", "POST", {"command": "ACTUATOR_TEST", "payload": {"mode": _mode}})
-        if _r:
-            st.sidebar.info(f"ACTUATOR_TEST {_mode} dispatched to the ESP32 (simulation). Confirmation appears under 'ESP32 replies'.")
+        _before = fetch_live() or {}
+        if not _before.get("available") or _before.get("stale"):
+            st.sidebar.error("The sensor ESP32 is not sending data right now, so it can't receive the test. "
+                             "Check its USB cable, then press the button again.")
         else:
-            st.sidebar.error(f"Not sent: {st.session_state.get('last_api_error')}")
+            _seen = {(i.get("t"), i.get("line")) for i in (_before.get("device_log") or [])}
+            _r = fetch_json(f"/devices/{PHYSICAL_DEVICE_ID}/command", "POST", {"command": "ACTUATOR_TEST", "payload": {"mode": _mode}})
+            if not _r:
+                st.sidebar.error(f"Not sent: {st.session_state.get('last_api_error')}")
+            else:
+                # Wait for the ESP32's own [ACT-TEST] reply so the page only reports what the board confirmed.
+                _reply = None
+                with st.sidebar, st.spinner(f"Waiting for the ESP32 to confirm {_mode}..."):
+                    for _ in range(12):
+                        time.sleep(0.5)
+                        _new = [i.get("line", "") for i in ((fetch_live() or {}).get("device_log") or [])
+                                if (i.get("t"), i.get("line")) not in _seen and "[ACT-TEST]" in i.get("line", "")]
+                        if _new:
+                            _reply = _new[-1]
+                            break
+                if _reply:
+                    st.sidebar.success(f"ESP32 confirmed: {_reply.replace('[ACT-TEST] ', '')}")
+                else:
+                    st.sidebar.error("Sent, but the ESP32 did not confirm within 6 s. Is the bridge running and the board plugged in?")
 
 st.sidebar.header("🎯 Calibration (physical probes)")
 st.sidebar.caption("The ESP32 refuses to store a reference if the signal is not repeatable (coefficient of variation > 5%), so a noisy probe can never become 'VALID'.")
