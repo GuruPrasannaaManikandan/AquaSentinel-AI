@@ -178,6 +178,43 @@ def sensor_card(col, title, live, name):
     col.caption(f"{STATE_LABEL.get(state, state or 'UNKNOWN')} - {note}" if note else STATE_LABEL.get(state, state or "UNKNOWN"))
 
 
+# ---- Simulated "increased turbidity" scenario (dashboard only) ----
+# The rise is generated here from elapsed time and added on top of the real NTU estimate
+# for display. It is always labelled SIMULATED and is never written to telemetry.
+SIM_TURB_RISE_MAX_NTU = 1000.0   # extra NTU the scenario adds at its peak
+SIM_TURB_RISE_SEC = 45.0         # time constant of the rise
+
+
+def simulated_rise_ntu(elapsed_sec):
+    return SIM_TURB_RISE_MAX_NTU * (1.0 - np.exp(-elapsed_sec / SIM_TURB_RISE_SEC))
+
+
+def sim_turbidity_elapsed():
+    sim = st.session_state.get("sim_turbidity")
+    return (datetime.datetime.now() - sim["started"]).total_seconds() if sim else None
+
+
+def turbidity_band(ntu):
+    if ntu < 10:
+        return "clear"
+    if ntu < 50:
+        return "slightly cloudy"
+    if ntu < 100:
+        return "cloudy"
+    return "very turbid"
+
+
+def simulated_turbidity_card(col, live, elapsed):
+    real_value, real_state, _ = sensor_display(live, "turbidity_ntu")
+    real_ntu = live.get("turbidity_ntu") if real_state == "VALID" and isinstance(live.get("turbidity_ntu"), (int, float)) else None
+    rise = simulated_rise_ntu(elapsed)
+    rise_step = rise - simulated_rise_ntu(max(elapsed - 2.0, 0.0))
+    shown = (real_ntu or 0.0) + rise
+    col.metric("Turbidity (NTU) - 🧪 SIMULATED SCENARIO", f"{shown:.0f} NTU", f"{rise_step:+.0f} NTU", delta_color="inverse")
+    col.caption(f"🧪 SIMULATED - TURBIDITY_SPIKE adds +{rise:.0f} NTU to the real probe value "
+                f"({real_value}, {STATE_LABEL.get(real_state, real_state or 'UNKNOWN')}). Not a sensor reading; not stored.")
+
+
 @st.fragment(run_every=2)
 def live_sensor_panel():
     st.subheader("🔴 Live Hardware Sensors (ESP32)")
@@ -193,7 +230,11 @@ def live_sensor_panel():
                    "Sensor readings below are real and are NOT altered.")
 
     c1, c2, c3 = st.columns(3)
-    sensor_card(c1, "Turbidity (NTU, estimated)", live, "turbidity_ntu")
+    sim_elapsed = sim_turbidity_elapsed()
+    if sim_elapsed is not None:
+        simulated_turbidity_card(c1, live, sim_elapsed)
+    else:
+        sensor_card(c1, "Turbidity (NTU, estimated)", live, "turbidity_ntu")
     sensor_card(c2, "Turbidity (raw ADC)", live, "turbidity")
     sensor_card(c3, "Water pH", live, "ph")
 
@@ -220,6 +261,16 @@ def live_sensor_panel():
                 st.code(item.get("line", ""), language=None)
 
 
+def sync_sim_turbidity():
+    """TURBIDITY_SPIKE starts as soon as it is picked and stops when another scenario is picked.
+    Dashboard-only: never sent to the ESP32 or the backend, and never stored as telemetry."""
+    if st.session_state.get("scenario_select") == "TURBIDITY_SPIKE":
+        st.session_state.setdefault("sim_turbidity", {"started": datetime.datetime.now()})
+    else:
+        st.session_state.pop("sim_turbidity", None)
+
+
+sync_sim_turbidity()
 live_sensor_panel()
 # Filled further down, once the sidebar scenario selection is known.
 sim_turbidity_slot = st.container()
@@ -270,73 +321,46 @@ scenario_opts = [
 ]
 
 active_scenarios = fetch_json("/simulation/scenarios") or {"AQUA_FRESH_001": "NORMAL", "AQUA_MARINE_001": "NORMAL"}
-current_scen = active_scenarios.get(selected_id, "NORMAL")
-if st.session_state.get("sim_turbidity"):
-    current_scen = "TURBIDITY_SPIKE"
-
-try:
-    default_idx = scenario_opts.index(current_scen)
-except ValueError:
-    default_idx = 0
+if "scenario_select" not in st.session_state:
+    _backend_scen = active_scenarios.get(selected_id, "NORMAL")
+    st.session_state["scenario_select"] = _backend_scen if _backend_scen in scenario_opts else "NORMAL"
 
 SCENARIO_LABELS = {"TURBIDITY_SPIKE": "TURBIDITY_SPIKE (increased turbidity - simulated)"}
-active_scen = st.sidebar.selectbox("Set Environmental Scenario", scenario_opts, index=default_idx,
+active_scen = st.sidebar.selectbox("Set Environmental Scenario", scenario_opts, key="scenario_select",
                                    format_func=lambda s: SCENARIO_LABELS.get(s, s))
 
+if active_scen == "TURBIDITY_SPIKE" and not st.session_state.get("sim_turbidity"):
+    # First run with the selection already set (e.g. widget restored): start now and redraw.
+    sync_sim_turbidity()
+    st.rerun()
+
 if st.sidebar.button("💾 Apply Scenario Selection"):
-    if active_scen == "TURBIDITY_SPIKE":
-        # Dashboard-only simulation: never sent to the ESP32, the live sensor cards or the EventStore.
-        st.session_state["sim_turbidity"] = {"started": datetime.datetime.now()}
-    else:
-        st.session_state.pop("sim_turbidity", None)
+    if active_scen != "TURBIDITY_SPIKE":
         fetch_json("/simulation/scenario", "POST", {"device_id": selected_id, "scenario": active_scen})
     st.rerun()
 
 st.sidebar.divider()
 
-# ---- Simulated "increased turbidity" scenario (dashboard only) ----
-# Values are generated here from elapsed time. They are never shown in the live
-# hardware cards and never written to telemetry, so nothing simulated passes as a reading.
-SIM_TURB_START_NTU = 5.0     # clear-water start point
-SIM_TURB_PEAK_NTU = 400.0    # very turbid
-SIM_TURB_RISE_SEC = 60.0     # time constant of the rise
-
-
-def simulated_turbidity_ntu(elapsed_sec):
-    return SIM_TURB_START_NTU + (SIM_TURB_PEAK_NTU - SIM_TURB_START_NTU) * (1.0 - np.exp(-elapsed_sec / SIM_TURB_RISE_SEC))
-
-
-def turbidity_band(ntu):
-    if ntu < 10:
-        return "clear"
-    if ntu < 50:
-        return "slightly cloudy"
-    if ntu < 100:
-        return "cloudy"
-    return "very turbid"
-
 
 @st.fragment(run_every=2)
 def simulated_turbidity_panel():
-    sim = st.session_state.get("sim_turbidity")
-    if not sim:
+    elapsed = sim_turbidity_elapsed()
+    if elapsed is None:
         return
     st.subheader("🧪 Scenario: Increased Turbidity (SIMULATED)")
-    st.warning("**SIMULATED VALUES - not a sensor reading.** Generated by the dashboard for the TURBIDITY_SPIKE scenario. "
-               "The live ESP32 cards above still show the real probe, and nothing here is stored as telemetry.")
-    elapsed = (datetime.datetime.now() - sim["started"]).total_seconds()
-    ntu = simulated_turbidity_ntu(elapsed)
-    prev = simulated_turbidity_ntu(max(elapsed - 2.0, 0.0))
+    st.warning("**SIMULATED VALUES - not a sensor reading.** The TURBIDITY_SPIKE scenario adds a rising amount of NTU on top of "
+               "the real probe value in the Turbidity (NTU) card above. The raw ADC card stays real, and nothing simulated is stored as telemetry.")
+    live = fetch_live() or {}
+    real_ntu = live.get("turbidity_ntu") if isinstance(live.get("turbidity_ntu"), (int, float)) else 0.0
+    rise = simulated_rise_ntu(elapsed)
     s1, s2, s3 = st.columns(3)
-    s1.metric("Simulated turbidity", f"{ntu:.0f} NTU", f"{ntu - prev:+.1f} NTU", delta_color="inverse")
-    s2.metric("Simulated water clarity", turbidity_band(ntu))
+    s1.metric("Simulated rise added", f"+{rise:.0f} NTU")
+    s2.metric("Simulated water clarity", turbidity_band(real_ntu + rise))
     s3.metric("Scenario running for", f"{elapsed:.0f} s")
     steps = np.arange(0.0, elapsed + 2.0, 2.0)
-    st.line_chart(pd.DataFrame({"seconds": steps, "simulated NTU": [simulated_turbidity_ntu(t) for t in steps]}),
-                  x="seconds", y="simulated NTU")
-    if st.button("⏹ Stop simulated scenario", key="stop_sim_turbidity"):
-        st.session_state.pop("sim_turbidity", None)
-        st.rerun(scope="app")
+    st.line_chart(pd.DataFrame({"seconds": steps, "simulated rise (NTU)": [simulated_rise_ntu(t) for t in steps]}),
+                  x="seconds", y="simulated rise (NTU)")
+    st.caption("To stop it, pick NORMAL in the scenario dropdown.")
 
 
 with sim_turbidity_slot:
