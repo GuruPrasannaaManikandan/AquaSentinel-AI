@@ -154,6 +154,9 @@ def sensor_display(live, name):
             if live.get("turbidity_ntu_within_noise"):
                 return "≈0 NTU", "VALID", "within sensor noise of clear water - " + note
             return f"{ntu:.0f} NTU", "VALID", note
+        if live.get("turbidity_ntu_out_of_range") and st_ == "VALID":
+            return "OUT OF RANGE", "OUT_OF_RANGE", (f"raw {_fmt(live.get('turbidity_raw_smoothed'), '{:.0f}')} is below the curve's valid range "
+                                                    f"(probe out of water, or beyond ~3000 NTU); no NTU shown")
         if live.get("turbidity_raw") is not None and st_ == "VALID":
             return "N/A", "UNCALIBRATED", "no clear-water reference stored, so no NTU estimate"
         return "N/A", st_ or "UNAVAILABLE", "no valid turbidity reading"

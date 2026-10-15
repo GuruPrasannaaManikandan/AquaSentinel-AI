@@ -540,7 +540,7 @@ def get_device_actuators(
 LIVE_SENSOR_PATH = os.path.join(BASE_DIR, "data", "live_sensor.json")
 
 
-TURB_SMOOTH_N = 15             # median of the last 15 packets (~30 s at 2 s/packet)
+TURB_SMOOTH_N = 5              # median of the last 5 packets (~10 s at 2 s/packet); noise is ~+/-2 counts
 TURB_DEADBAND_FRAC = 0.05      # measured 60 s noise was +/-1 count (~1%); floor of 5% of the reference
 TURB_REF_PATH = os.path.join(BASE_DIR, "data", "turbidity_clear_ref.json")
 
@@ -562,7 +562,8 @@ def estimate_turbidity_ntu(raw, clear_raw, deadband_frac=TURB_DEADBAND_FRAC):
         return 0.0, True
     v = 4.2 * ratio
     if v < 2.5:
-        return 3000.0, False
+        # Below the curve's valid range (probe in air, or beyond ~3000 NTU): no number.
+        return None, False
     ntu = -1120.4 * v * v + 5742.3 * v - 4352.9
     return round(min(max(ntu, 0.0), 3000.0), 1), False
 
@@ -680,6 +681,7 @@ def get_live_sensor_reading(device_id: str = Query("AQUA_FRESH_001")):
         # Don't publish a number while the probe is being moved / is settling.
         spread = (max(recent) - min(recent)) if recent else None
         settling = bool(clear_raw) and spread is not None and spread > TURB_DEADBAND_FRAC * clear_raw
+        out["turbidity_ntu_out_of_range"] = bool(clear_raw) and ntu is None and smoothed is not None
         out["turbidity_raw_spread"] = spread
         out["turbidity_settling"] = settling
         if settling:
