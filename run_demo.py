@@ -34,7 +34,8 @@ def main():
     dashboard_cmd = [
         sys.executable, "-m", "streamlit", "run", "dashboard/app.py",
         "--server.port", "8501",
-        "--server.address", "127.0.0.1"
+        "--server.address", "127.0.0.1",
+        "--server.headless", "true"
     ]
     
     dashboard_proc = subprocess.Popen(
